@@ -1336,7 +1336,7 @@ const preTag = stock.isPremarket ? ' (PRE)' : '';
                 isSelected ? 'bg-blue-600/12 hover:bg-blue-600/18' : 'hover:bg-gray-800/50'
               }"
             >
-              <td class="py-3.5 px-4">
+              <td class="py-3.5 px-2">
                 <div class="flex items-center gap-2.5">
                   <div class="w-1.5 h-10 rounded-full ${isSelected ? 'bg-blue-500' : 'bg-transparent'}"></div>
                   <div>
@@ -1349,7 +1349,7 @@ const preTag = stock.isPremarket ? ' (PRE)' : '';
                       }
                       <span class="text-[10px] px-1.5 py-0.2 rounded bg-gray-800 text-gray-300">${stock.theme}</span>
                     </div>
-                    <div class="text-xs text-gray-400 mt-0.5 truncate max-w-[160px] sm:max-w-[210px]">
+                    <div class="text-xs text-gray-400 mt-0.5 truncate max-w-[110px] sm:max-w-[135px]">
                       ${(() => {
                     const descText = stock.oneLiner || stock.name || '';
                     const avgScore = ((Number(stock.shortScore) || 75) + (Number(stock.midScore) || 75) + (Number(stock.longScore) || 75)) / 3;
@@ -1363,22 +1363,22 @@ const preTag = stock.isPremarket ? ' (PRE)' : '';
                   </div>
                 </div>
               </td>
-              <td class="py-3.5 px-3 text-right font-mono">
+              <td class="py-3.5 px-1.5 text-right font-mono">
                 <div class="font-semibold text-gray-100">$${stock.price.toFixed(2)}${preTag}</div>
                 <div class="text-xs ${isUp ? 'text-emerald-400' : 'text-rose-400'}">
                   ${isUp ? '+' : ''}${stock.changePct.toFixed(2)}%${preTag}
                 </div>
               </td>
-              <td class="py-3.5 px-2.5 text-center font-mono text-xs font-bold ${getScoreTextColor(stock.shortScore)}">
+              <td class="py-3.5 px-1 text-center font-mono text-xs font-bold ${getScoreTextColor(stock.shortScore)}">
                 ${stock.shortScore}
               </td>
-              <td class="py-3.5 px-2.5 text-center font-mono text-xs font-bold ${getScoreTextColor(stock.midScore)}">
+              <td class="py-3.5 px-1 text-center font-mono text-xs font-bold ${getScoreTextColor(stock.midScore)}">
                 ${stock.midScore}
               </td>
-              <td class="py-3.5 px-2.5 text-center font-mono text-xs font-bold ${getScoreTextColor(stock.longScore)}">
+              <td class="py-3.5 px-1 text-center font-mono text-xs font-bold ${getScoreTextColor(stock.longScore)}">
                 ${stock.longScore}
               </td>
-              <td class="py-3.5 px-3 text-center">
+              <td class="py-3.5 px-1.5 text-center">
                 <div class="inline-flex flex-col items-center gap-0.5">
                   <span class="px-2.5 py-1 rounded-full text-[11px] font-bold border ${meta.badgeClass} whitespace-nowrap">
                     ${meta.label}
