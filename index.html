@@ -1398,12 +1398,18 @@ const preTag = stock.isPremarket ? ' (PRE)' : '';
         })
         .join('');
     }
+const tbodyEl =
+  (typeof tbody !== 'undefined' && tbody) ||
+  document.querySelector('#hot-stocks-view tbody') ||
+  document.querySelector('table tbody');
+const hostTable = tbodyEl ? tbodyEl.closest('table') : document.querySelector('table');
+
 let pagerEl = document.getElementById('hot-stocks-pagination');
-if (!pagerEl && tbody && tbody.closest('table')) {
+if (!pagerEl && hostTable) {
   pagerEl = document.createElement('div');
   pagerEl.id = 'hot-stocks-pagination';
   pagerEl.className = 'flex items-center justify-center gap-1.5 mt-3 pt-2 border-t border-gray-800';
-  tbody.closest('table').insertAdjacentElement('afterend', pagerEl);
+  hostTable.insertAdjacentElement('afterend', pagerEl);
 }
 
 if (pagerEl) {
