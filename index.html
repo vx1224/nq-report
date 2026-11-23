@@ -1413,12 +1413,25 @@ if (!pagerEl && hostTable) {
 }
 
 if (pagerEl) {
+  const safePageSize = typeof HOT_PAGE_SIZE === 'number' && HOT_PAGE_SIZE > 0 ? HOT_PAGE_SIZE : 8;
+  const safeTotalItems =
+    typeof filtered !== 'undefined' && Array.isArray(filtered)
+      ? filtered.length
+      : (typeof stocksData !== 'undefined' && Array.isArray(stocksData) ? stocksData.length : 0);
+  const safeTotalPages =
+    typeof totalHotPages === 'number' && totalHotPages > 0
+      ? totalHotPages
+      : Math.max(1, Math.ceil(safeTotalItems / safePageSize));
+
+  window.hotCurrentPage = window.hotCurrentPage || 1;
+  if (window.hotCurrentPage > safeTotalPages) window.hotCurrentPage = safeTotalPages;
+
   let buttonsHtml = '';
-  for (let p = 1; p <= totalHotPages; p++) {
+  for (let p = 1; p <= safeTotalPages; p++) {
     const active = p === window.hotCurrentPage;
     buttonsHtml += `
       <button type="button"
-        onclick="window.hotCurrentPage=${p}; renderHotStocksTable();"
+        onclick="window.hotCurrentPage=${p}; if (typeof renderHotStocksTable === 'function') renderHotStocksTable();"
         class="px-2.5 py-1 rounded-lg text-xs font-mono font-bold transition cursor-pointer ${
           active
             ? 'bg-blue-600 text-white border border-blue-500'
@@ -1429,6 +1442,7 @@ if (pagerEl) {
     `;
   }
   pagerEl.innerHTML = buttonsHtml;
+}
 }
     function renderThemeLeadersView() {
       const container = document.getElementById('theme-leaders-view');
@@ -1502,6 +1516,11 @@ if (pagerEl) {
                             <div class="text-[11px] ${isUp ? 'text-emerald-400' : 'text-rose-400'}">
                               ${isUp ? '+' : ''}${stock.changePct.toFixed(2)}%
                             </div>
+                            <button type="button"
+                    onclick="event.stopPropagation(); editStockTheme('${stock.ticker}');"
+                    class="mt-1 text-[10px] px-1.5 py-0.5 rounded bg-gray-800 text-gray-300 border border-gray-700 hover:bg-gray-700 cursor-pointer">
+                    테마수정
+                  </button>
                           </div>
                         </div>
 
