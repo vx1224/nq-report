@@ -201,9 +201,11 @@
 
     <!-- 3. Section 2 & 3: 개별 종목 분석 (🔥 지금 핫한 주식 vs 🗂️ 테마별 대표 대기업) & AI 딥다이브 패널 -->
     <section class="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
-
+  <div class="xl:col-span-7 bg-[#111827] border border-gray-800/90 rounded-2xl p-4 sm:p-6 shadow-xl space-y-5" id="deep-dive-panel">
+        <!-- JS로 선택된 종목 상세 렌더링 -->
+      </div>
       <!-- 좌측/상단: 개별 종목 뷰 컨테이너 (7컬럼) -->
-      <div class="xl:col-span-7 bg-[#111827] border border-gray-800/90 rounded-2xl overflow-hidden shadow-xl">
+      <div class="xl:col-span-5 bg-[#111827] border border-gray-800/90 rounded-2xl overflow-hidden shadow-xl">
         <!-- 상단 보기 모드 전환 헤더 -->
         <div class="p-4 sm:p-5 border-b border-gray-800 space-y-3.5">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -282,9 +284,7 @@
       </div>
 
       <!-- 우측/하단: 개별 종목 AI 딥다이브 & 기간별 판단 시뮬레이터 (5컬럼) -->
-      <div class="xl:col-span-5 bg-[#111827] border border-gray-800/90 rounded-2xl p-4 sm:p-6 shadow-xl space-y-5" id="deep-dive-panel">
-        <!-- JS로 선택된 종목 상세 렌더링 -->
-      </div>
+    
     </section>
 
     <!-- 4. Section 4: 내 서버에서 실제 데이터로 구동하기 (Full-Stack 아키텍처 & 코드 가이드) -->
