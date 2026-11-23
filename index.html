@@ -2029,11 +2029,6 @@ document.getElementById('last-updated-time').textContent = `최근 업데이트:
         }
       });
     }
-if (typeof latest.ma120 === 'number' && !Number.isNaN(latest.ma120)) {
-          item.ma120 = latest.ma120;
-        }
-      });
-
       // 👉 여기! (stocksData.forEach 끝난 바로 아래, if (stocksData ...) 닫는 } 안쪽)
       const existingTickers = new Set(
         stocksData.map((item) => String(item.ticker || item.symbol || '').toUpperCase())
