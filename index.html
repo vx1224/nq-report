@@ -1449,9 +1449,16 @@ if (pagerEl) {
                   </div>
                   <p class="text-xs text-gray-400 mt-0.5">${metaInfo.momentum}</p>
                 </div>
-                <span class="text-[11px] font-semibold px-2.5 py-1 rounded-lg border ${metaInfo.badgeColor} self-start sm:self-center">
-                  ${metaInfo.horizonSummary}
-                </span>
+                <div class="flex items-center gap-2 self-start sm:self-center">
+                    <span class="text-[11px] font-semibold px-2.5 py-1 rounded-lg border ${metaInfo.BadgeColor}">
+                      ${metaInfo.horizonSummary}
+                    </span>
+                    <button type="button"
+                      onclick="event.stopPropagation(); addThemeLeader('${themeKey}');"
+                      class="text-[11px] font-bold px-2.5 py-1 rounded-lg bg-blue-600/20 text-blue-300 border border-blue-500/40 hover:bg-blue-600/35 cursor-pointer">
+                      + 추가
+                    </button>
+                  </div>
               </div>
 
               <!-- 테마 내 대표 대기업 카드 그리드 -->
@@ -1514,7 +1521,83 @@ if (pagerEl) {
 
       document.getElementById('watchlist-count').textContent = `${totalVisibleCount}종목`;
     }
+const CUSTOM_STOCKS_STORAGE_KEY = 'nq_custom_stocks_v1';
 
+function saveCustomStocks() {
+  try {
+    localStorage.setItem(CUSTOM_STOCKS_STORAGE_KEY, JSON.stringify(stocksData));
+  } catch (e) {
+    console.warn('로컬 저장 실패:', e);
+  }
+}
+
+(function loadCustomStocksOnce() {
+  try {
+    const saved = localStorage.getItem(CUSTOM_STOCKS_STORAGE_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        stocksData.length = 0;
+        parsed.forEach((item) => stocksData.push(item));
+      }
+    }
+  } catch (e) {
+    console.warn('로컬 불러오기 실패:', e);
+  }
+})();
+
+function addThemeLeader(themeKey) {
+  const rawTicker = prompt(`[${themeKey}] 테마에 추가할 티커를 입력하세요 (예: AVGO):`);
+  if (!rawTicker) return;
+  const ticker = rawTicker.trim().toUpperCase();
+
+  const existing = stocksData.find((s) => s.ticker === ticker);
+  if (existing) {
+    existing.theme = themeKey;
+    saveCustomStocks();
+    if (typeof renderHotStocksTable === 'function') renderHotStocksTable();
+    renderThemeLeadersView();
+    return;
+  }
+
+  const name = (prompt(`${ticker} 기업명을 입력하세요 (예: Broadcom):`) || ticker).trim();
+  const price = Number(prompt(`${ticker} 현재가를 입력하세요:`, '100') || 100);
+  const changePct = Number(prompt(`${ticker} 등락률(%)을 입력하세요:`, '0') || 0);
+
+  stocksData.push({
+    ticker,
+    name,
+    theme: themeKey,
+    price: Number.isFinite(price) ? price : 100,
+    changePct: Number.isFinite(changePct) ? changePct : 0,
+    shortScore: 75,
+    midScore: 75,
+    longScore: 75,
+    oneLiner: `${themeKey} 대표 종목`,
+    news: []
+  });
+
+  saveCustomStocks();
+  if (typeof renderHotStocksTable === 'function') renderHotStocksTable();
+  renderThemeLeadersView();
+}
+
+function editStockTheme(ticker) {
+  const target = stocksData.find((s) => s.ticker === ticker);
+  if (!target) return;
+
+  const availableThemes = Object.keys(themeCatalog).join(', ');
+  const nextTheme = prompt(
+    `${ticker} (${target.name})의 테마를 입력하세요.\n사용 가능 테마: ${availableThemes}`,
+    target.theme || ''
+  );
+  if (!nextTheme) return;
+
+  target.theme = nextTheme.trim();
+  saveCustomStocks();
+  if (typeof renderHotStocksTable === 'function') renderHotStocksTable();
+  renderThemeLeadersView();
+}
     function renderActiveListView() {
       if (currentViewMode === 'HOT') {
         renderHotStocksTable();
