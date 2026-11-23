@@ -1988,7 +1988,56 @@ def analyze_market(tickers: str = "QQQ,NVDA,AVGO,AMD,TSM,MSFT,GOOGL,AMZN,META,AA
         }
       });
     }
+if (typeof latest.ma120 === 'number' && !Number.isNaN(latest.ma120)) {
+          item.ma120 = latest.ma120;
+        }
+      });
 
+      // 👉 여기! (stocksData.forEach 끝난 바로 아래, if (stocksData ...) 닫는 } 안쪽)
+      const existingTickers = new Set(
+        stocksData.map((item) => String(item.ticker || item.symbol || '').toUpperCase())
+      );
+
+      validStocks.forEach((s) => {
+        const sym = String(s.symbol || s.ticker || '').toUpperCase();
+        if (!sym || existingTickers.has(sym)) return;
+
+        stocksData.push({
+          ticker: sym,
+          name: s.name || sym,
+          theme: s.theme || '기타',
+          sector: s.sector || '',
+          isHot: Boolean(s.isHot),
+          hotTag: s.hotTag || '',
+          hotRank: typeof s.hotRank === 'number' ? s.hotRank : 99,
+          price: s.price,
+          changePct: typeof s.change_pct === 'number' ? s.change_pct : (s.changePct ?? 0),
+          shortScore: s.shortScore ?? 70,
+          midScore: s.midScore ?? 75,
+          longScore: s.longScore ?? 75,
+          shortDir: s.shortDir || '보합 (→)',
+          midDir: s.midDir || '관망 (→)',
+          longDir: s.longDir || '관망 (→)',
+          ma20: typeof s.ma20 === 'number' ? s.ma20 : s.price,
+          ma60: typeof s.ma60 === 'number' ? s.ma60 : s.price,
+          ma120: typeof s.ma120 === 'number' ? s.ma120 : s.price,
+          rsi: typeof s.rsi14 === 'number' ? s.rsi14 : (s.rsi ?? 50),
+          forwardPE: s.forwardPE ?? '-',
+          revGrowth: s.revGrowth ?? '-',
+          opMargin: s.opMargin ?? '-',
+          oneLiner: s.oneLiner || `${sym} 최신 시세 반영 종목`,
+          shortNote: s.shortNote || '',
+          midNote: s.midNote || '',
+          longNote: s.longNote || '',
+          news: Array.isArray(s.news) ? s.news : []
+        });
+        existingTickers.add(sym);
+        updatedCount += 1;
+      });
+    }
+
+    // 3) 화면 다시 그리기
+    if (updatedCount > 0) {
     // 3) 화면 다시 그리기
     if (updatedCount > 0) {
       if (typeof renderIndexFuturesAndMacro === 'function') renderIndexFuturesAndMacro();
