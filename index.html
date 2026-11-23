@@ -2053,7 +2053,75 @@ if (Number.isFinite(nextChange)) {
           item.ma120 = latest.ma120;
         }
       });
+function buildHorizonAnalysis(stock) {
+  const price = Number(stock.price) || 0;
+  const changePct = Number(stock.changePct) || 0;
+  const rsi = Number.isFinite(Number(stock.rsi)) ? Number(stock.rsi) : 50;
+  const ma20 = Number(stock.ma20) || price || 1;
+  const ma60 = Number(stock.ma60) || price || 1;
+  const ma120 = Number(stock.ma120) || price || 1;
 
+  const textBlob = [
+    stock.ticker,
+    stock.name,
+    stock.theme,
+    stock.oneLiner,
+    ...(Array.isArray(stock.news) ? stock.news.map((n) => (typeof n === 'string' ? n : n?.title || '')) : [])
+  ].join(' ');
+
+  const politicalHits = (textBlob.match(/관세|규제|반독점|보조금|제재|수출|정부|국방|우주|전력망|리쇼어링|금리|연준|cpi|선거/gi) || []).length;
+  const macroHits = (textBlob.match(/금리|인플레|cpi|경기|달러|국채|매크로|거시|유동성|클라우드|ai|데이터센터|hbm/gi) || []).length;
+  const microHits = (textBlob.match(/실적|수주|점유율|마진|가이던스|신제품|구독|광고|결제|파운드리|수율/gi) || []).length;
+
+  const above20 = price >= ma20;
+  const above60 = price >= ma60;
+  const above120 = price >= ma120;
+
+  let shortScore = 72;
+  if (changePct >= 3) shortScore += 5;
+  else if (changePct >= 1) shortScore += 3;
+  else if (changePct <= -3) shortScore -= 4;
+  else if (changePct < 0) shortScore -= 2;
+
+  if (rsi < 32) shortScore += 4;
+  else if (rsi > 72) shortScore -= 4;
+  else if (rsi >= 50) shortScore += 2;
+
+  shortScore += above20 ? 3 : -3;
+  shortScore += Math.min(4, (microHits + politicalHits) * 1.5);
+  shortScore = Math.max(55, Math.min(92, Math.round(shortScore)));
+
+  let midScore = 74;
+  midScore += above20 ? 3 : -3;
+  midScore += above60 ? 5 : -4;
+  midScore += Math.min(6, microHits * 2);
+  midScore += Math.min(5, politicalHits * 1.5);
+  midScore = Math.max(55, Math.min(92, Math.round(midScore)));
+
+  let longScore = 75;
+  longScore += above120 ? 6 : -5;
+  longScore += above60 ? 3 : -2;
+  longScore += Math.min(6, macroHits * 2);
+  longScore += politicalHits > 0 ? 2 : 0;
+  longScore = Math.max(55, Math.min(93, Math.round(longScore)));
+
+  const rsiLabel = rsi >= 70 ? `RSI ${rsi.toFixed(0)} 과열권` : rsi <= 30 ? `RSI ${rsi.toFixed(0)} 과매도권` : `RSI ${rsi.toFixed(0)} 중립권`;
+  const ma20Label = above20 ? '20MA 상회' : '20MA 하회';
+  const ma60Label = above60 ? '60MA 지지' : '60MA 저항';
+  const ma120Label = above120 ? '120MA 장기 상승추세' : '120MA 장기 회복구간';
+
+  return {
+    shortScore,
+    midScore,
+    longScore,
+    shortDir: shortScore >= 78 ? '상승 (↗)' : shortScore <= 66 ? '하락 (↘)' : '보합 (→)',
+    midDir: midScore >= 78 ? '상승 (↗)' : midScore <= 66 ? '조정 (↘)' : '관망 (→)',
+    longDir: longScore >= 80 ? '강세 (↗)' : longScore <= 67 ? '주의 (↘)' : '관망 (→)',
+    shortNote: `${ma20Label}·${rsiLabel} 기준 단기 변동성(${changePct >= 0 ? '+' : ''}${changePct.toFixed(2)}%) 및 수급 반응 점검 필요`,
+    midNote: `${ma60Label} 및 ${stock.theme || '핵심'} 업황·정책(${politicalHits > 0 ? '정책/규제 변수 반영' : '실적·수주 모멘텀 중심'}) 추세 확인`,
+    longNote: `${ma120Label} 속 거시 환경과 '${stock.oneLiner || '구조적 성장'}' 장기 방향성 유효`
+  };
+}
       const existingTickers = new Set(
         stocksData.map((item) => String(item.ticker || item.symbol || '').toUpperCase())
       );
@@ -2071,6 +2139,29 @@ const metaMap = {
       BAC: { name: 'Bank of America', theme: '금융·거시', oneLiner: '금리 환경·대출 마진 및 자산건전성 주시' }
     };
     const fallbackMeta = metaMap[sym] || {};
+        const priceVal = pickPrice(s);
+    const changePctVal = pickChange(s) ?? (s.changePct ?? 0);
+    const ma20Val = typeof s.ma20 === 'number' ? s.ma20 : priceVal;
+    const ma60Val = typeof s.ma60 === 'number' ? s.ma60 : priceVal;
+    const ma120Val = typeof s.ma120 === 'number' ? s.ma120 : priceVal;
+    const rsiVal = typeof s.rsi14 === 'number' ? s.rsi14 : (s.rsi ?? 50);
+    const nameVal = s.name || fallbackMeta.name || sym;
+    const themeVal = s.theme || fallbackMeta.theme || '기타';
+    const oneLinerVal = s.oneLiner || fallbackMeta.oneLiner || `${sym} 최신 시세 반영 종목`;
+
+    const autoAnalysis = buildHorizonAnalysis({
+      ticker: sym,
+      name: nameVal,
+      theme: themeVal,
+      oneLiner: oneLinerVal,
+      price: priceVal,
+      changePct: changePctVal,
+      ma20: ma20Val,
+      ma60: ma60Val,
+      ma120: ma120Val,
+      rsi: rsiVal,
+      news: Array.isArray(s.news) ? s.news : []
+    });
         stocksData.push({
           ticker: sym,
           name: s.name || fallbackMeta.name || sym,
@@ -2082,12 +2173,12 @@ const metaMap = {
           price: pickPrice(s),
           changePct: pickChange(s) ?? (s.changePct ?? 0),
           isPremarket: String(s.session || s.market_session || '').toLowerCase().includes('pre'),
-          shortScore: s.shortScore ?? 70,
-          midScore: s.midScore ?? 75,
-          longScore: s.longScore ?? 75,
-          shortDir: s.shortDir || '보합 (→)',
-          midDir: s.midDir || '관망 (→)',
-          longDir: s.longDir || '관망 (→)',
+          shortScore: s.shortScore ?? autoAnalysis.shortScore,
+      midScore: s.midScore ?? autoAnalysis.midScore,
+      longScore: s.longScore ?? autoAnalysis.longScore,
+      shortDir: s.shortDir || autoAnalysis.shortDir,
+      midDir: s.midDir || autoAnalysis.midDir,
+      longDir: s.longDir || autoAnalysis.longDir,
           ma20: typeof s.ma20 === 'number' ? s.ma20 : s.price,
           ma60: typeof s.ma60 === 'number' ? s.ma60 : s.price,
           ma120: typeof s.ma120 === 'number' ? s.ma120 : s.price,
@@ -2096,9 +2187,9 @@ const metaMap = {
           revGrowth: s.revGrowth ?? '-',
           opMargin: s.opMargin ?? '-',
           oneLiner: s.oneLiner || fallbackMeta.oneLiner || `${sym} 최신 시세 반영 종목`,
-          shortNote: s.shortNote || '',
-          midNote: s.midNote || '',
-          longNote: s.longNote || '',
+          shortNote: s.shortNote || autoAnalysis.shortNote,
+      midNote: s.midNote || autoAnalysis.midNote,
+      longNote: s.longNote || autoAnalysis.longNote,
           news: Array.isArray(s.news) ? s.news : []
         });
         existingTickers.add(sym);
