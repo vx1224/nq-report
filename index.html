@@ -1978,9 +1978,9 @@ def analyze_market(tickers: str = "QQQ,NVDA,AVGO,AMD,TSM,MSFT,GOOGL,AMZN,META,AA
 
     const data = await res.json();
     const updatedTimeText = formatMarketUpdatedTime(data.updated_at_utc);
-    const updatedTimeEl = document.getElementById('marketUpdatedTime');
+    const updatedTimeEl = document.getElementById('last-updated-time');
     if (updatedTimeEl && updatedTimeText) {
-      updatedTimeEl.textContent = updatedTimeText;
+      updatedTimeEl.textContent = `최근 업데이트: ${updatedTimeText}`;
     }
     if (!data || typeof data !== 'object' || !Array.isArray(data.stocks) || data.stocks.length === 0) {
       return;
