@@ -1349,7 +1349,15 @@ const preTag = stock.isPremarket ? ' (PRE)' : '';
                       <span class="text-[10px] px-1.5 py-0.2 rounded bg-gray-800 text-gray-300">${stock.theme}</span>
                     </div>
                     <div class="text-xs text-gray-400 mt-0.5 truncate max-w-[160px] sm:max-w-[210px]">
-                      <span class="text-cyan-400/90 font-medium">${stock.hotTag}</span> · ${stock.oneLiner || stock.name}
+                      ${(() => {
+                    const descText = stock.oneLiner || stock.name || '';
+                    const avgScore = ((Number(stock.shortScore) || 75) + (Number(stock.midScore) || 75) + (Number(stock.longScore) || 75)) / 3;
+                    const isBearish = /악재|하락|부진|둔화|리스크|우려|경계|제재|관세|소송|반독점|적자|손실|축소|지연|이탈|약세|조정/i.test(descText);
+                    const isBullish = /호재|상승|강세|성장|수혜|확대|개선|반등|돌파|수주|선도|턴어라운드|기대|모멘텀|신제품|흑자/i.test(descText);
+                    const outlookColor = isBearish ? 'text-rose-400' : isBullish ? 'text-cyan-400/90' : (avgScore >= 76 ? 'text-cyan-400/90' : 'text-rose-400');
+                    const prefix = stock.hotTag ? `<span class="text-cyan-400/90 font-medium">${stock.hotTag}</span> · ` : '';
+                    return `${prefix}<span class="${outlookColor} font-medium">${descText}</span>`;
+                  })()}
                     </div>
                   </div>
                 </div>
