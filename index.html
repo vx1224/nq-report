@@ -1954,14 +1954,16 @@ def analyze_market(tickers: str = "QQQ,NVDA,AVGO,AMD,TSM,MSFT,GOOGL,AMZN,META,AA
     if (validStocks.length === 0) {
       return;
     }
-const stockMap = new Map(
-      validStocks.map((s) => [String(s.ticker || '').toUpperCase(), s])
+// 1) symbol 기준으로 최신 데이터 맵 생성
+    const stockMap = new Map(
+      validStocks.map((s) => [String(s.symbol || s.ticker || '').toUpperCase(), s])
     );
 
+    // 2) 기존 stocksData 배열 안의 종목 값 덮어쓰기
     let updatedCount = 0;
     if (typeof stocksData !== 'undefined' && Array.isArray(stocksData)) {
       stocksData.forEach((item) => {
-        const key = String(item.ticker || '').toUpperCase();
+        const key = String(item.ticker || item.symbol || '').toUpperCase();
         const latest = stockMap.get(key);
         if (!latest) return;
 
@@ -1969,16 +1971,25 @@ const stockMap = new Map(
           item.price = latest.price;
           updatedCount += 1;
         }
-        const pct = latest.changePct ?? latest.change_pct ?? latest.changePercent;
-        if (typeof pct === 'number' && !Number.isNaN(pct)) {
-          item.changePct = pct;
+        if (typeof latest.change_pct === 'number' && !Number.isNaN(latest.change_pct)) {
+          item.changePct = latest.change_pct;
         }
-        if (typeof latest.rsi === 'number' && !Number.isNaN(latest.rsi)) {
-          item.rsi = latest.rsi;
+        if (typeof latest.rsi14 === 'number' && !Number.isNaN(latest.rsi14)) {
+          item.rsi = latest.rsi14;
+        }
+        if (typeof latest.ma20 === 'number' && !Number.isNaN(latest.ma20)) {
+          item.ma20 = latest.ma20;
+        }
+        if (typeof latest.ma60 === 'number' && !Number.isNaN(latest.ma60)) {
+          item.ma60 = latest.ma60;
+        }
+        if (typeof latest.ma120 === 'number' && !Number.isNaN(latest.ma120)) {
+          item.ma120 = latest.ma120;
         }
       });
     }
 
+    // 3) 화면 다시 그리기
     if (updatedCount > 0) {
       if (typeof renderIndexFuturesAndMacro === 'function') renderIndexFuturesAndMacro();
       if (typeof renderHorizonCards === 'function') renderHorizonCards();
