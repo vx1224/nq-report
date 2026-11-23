@@ -15,8 +15,8 @@ INDEX_TICKERS = {
 }
 
 STOCK_TICKERS = [
-    "NVDA", "MSFT", "AAPL", "AMZN", "META",
-    "GOOGL", "TSLA", "AVGO", "PLTR", "TSM", "GEV",
+    "NVDA", "MSFT", "AAPL", "AMZN", "META", "SPCX", "INTC", "ANT", "ORCL",
+    "GOOGL", "TSLA", "AVGO", "PLTR", "TSM", "GEV", "NFLX", "MU", "BAC",
 ]
 
 
