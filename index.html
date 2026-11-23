@@ -1973,6 +1973,21 @@ document.getElementById('last-updated-time').textContent = `최근 업데이트:
 
     return `${kstStr} KST (${usFormatted})`;
   }
+ function pickPrice(s) {
+  const sess = String(s.session || s.market_session || '').toLowerCase();
+  const pre = Number(s.premarket_price ?? s.preMarketPrice);
+  if (sess.includes('pre') && Number.isFinite(pre) && pre > 0) return pre;
+  const cur = Number(s.price);
+  return Number.isFinite(cur) && cur > 0 ? cur : NaN;
+}
+
+function pickChange(s) {
+  const sess = String(s.session || s.market_session || '').toLowerCase();
+  const preChg = Number(s.premarket_change_pct ?? s.preMarketChangePct);
+  if (sess.includes('pre') && Number.isFinite(preChg)) return preChg;
+  const curChg = Number(s.change_pct ?? s.changePct);
+  return Number.isFinite(curChg) ? curChg : undefined;
+}   
 (async function syncMarketData() {
   try {
     const res = await fetch('./data/market_data.json', { cache: 'no-store' });
@@ -1994,8 +2009,8 @@ document.getElementById('last-updated-time').textContent = `최근 업데이트:
     }
 
     const validStocks = data.stocks.filter(
-      (item) => item && typeof item.price === 'number' && !Number.isNaN(item.price)
-    );
+  (item) => item && Number.isFinite(pickPrice(item)) && pickPrice(item) > 0
+);
     if (validStocks.length === 0) {
       return;
     }
@@ -2013,13 +2028,15 @@ document.getElementById('last-updated-time').textContent = `최근 업데이트:
         const latest = stockMap.get(key);
         if (!latest) return;
 
-        if (typeof latest.price === 'number' && !Number.isNaN(latest.price)) {
-          item.price = latest.price;
-          updatedCount += 1;
-        }
-        if (typeof latest.change_pct === 'number' && !Number.isNaN(latest.change_pct)) {
-          item.changePct = latest.change_pct;
-        }
+        const nextPrice = pickPrice(latest);
+if (Number.isFinite(nextPrice) && nextPrice > 0) {
+  item.price = nextPrice;
+  updatedCount += 1;
+}
+        const nextChange = pickChange(latest);
+if (Number.isFinite(nextChange)) {
+  item.changePct = nextChange;
+}
         if (typeof latest.rsi14 === 'number' && !Number.isNaN(latest.rsi14)) {
           item.rsi = latest.rsi14;
         }
@@ -2050,8 +2067,8 @@ document.getElementById('last-updated-time').textContent = `최근 업데이트:
           isHot: Boolean(s.isHot),
           hotTag: s.hotTag || '',
           hotRank: typeof s.hotRank === 'number' ? s.hotRank : 99,
-          price: s.price,
-          changePct: typeof s.change_pct === 'number' ? s.change_pct : (s.changePct ?? 0),
+          price: pickPrice(s),
+          changePct: pickChange(s) ?? (s.changePct ?? 0),
           shortScore: s.shortScore ?? 70,
           midScore: s.midScore ?? 75,
           longScore: s.longScore ?? 75,
