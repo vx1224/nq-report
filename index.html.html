@@ -1,0 +1,1941 @@
+<!DOCTYPE html>
+<html lang="ko" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NASDAQ & US Big Tech AI 자동 분석 터미널</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            terminal: {
+              bg: '#0b0f19',
+              card: '#111827',
+              cardHover: '#161f33',
+              border: '#1f2937',
+              accent: '#3b82f6',
+            }
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    body {
+      background-color: #0b0f19;
+      color: #f3f4f6;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+    /* 커스텀 스크롤바 */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0b0f19;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1f2937;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #374151;
+    }
+    /* 슬라이더 커스텀 */
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      height: 6px;
+      border-radius: 9999px;
+      background: #1f2937;
+      outline: none;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #3b82f6;
+      cursor: pointer;
+      border: 2px solid #0b0f19;
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.4);
+    }
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+    .animate-pulse-dot {
+      animation: pulse-dot 2s infinite ease-in-out;
+    }
+  </style>
+</head>
+<body class="min-h-screen antialiased selection:bg-blue-500/30 selection:text-blue-200">
+
+  <!-- 알림 토스트 (alert 대체용) -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- 1. 상단 헤더 & 상태 바 -->
+  <header class="sticky top-0 z-40 border-b border-gray-800/80 bg-[#0b0f19]/90 backdrop-blur-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5">
+      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+        <!-- 타이틀 & 라이브 인디케이터 -->
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
+              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+              </svg>
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <h1 class="text-base sm:text-lg font-bold tracking-tight text-white">NASDAQ & US Big Tech AI 자동 분석 터미널</h1>
+                <span class="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse-dot"></span>
+                  AI 엔진 가동중
+                </span>
+              </div>
+              <p class="text-xs text-gray-400 mt-0.5 flex flex-wrap items-center gap-2">
+                <span id="market-session-badge" class="text-amber-400 font-medium">● 미국 정규장 마감 · 프리마켓 대기</span>
+                <span class="text-gray-600">|</span>
+                <span id="last-updated-time">최근 업데이트: 방금 전</span>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 우측 컨트롤: 티커 추가 & AI 재분석 버튼 -->
+        <div class="flex flex-wrap items-center gap-2.5">
+          <form id="add-ticker-form" class="flex items-center flex-1 sm:flex-initial">
+            <div class="relative flex items-center w-full sm:w-auto">
+              <select
+                id="ticker-theme-select"
+                aria-label="테마 선택"
+                class="bg-gray-900/90 border border-gray-700/80 text-gray-300 text-xs rounded-l-xl px-2.5 py-2 focus:outline-none focus:border-blue-500"
+              >
+                <option value="AI 반도체">AI 반도체</option>
+                <option value="빅테크 클라우드">빅테크 클라우드</option>
+                <option value="온디바이스">온디바이스</option>
+                <option value="전력·인프라">전력·인프라</option>
+                <option value="자율주행·SW">자율주행·SW</option>
+              </select>
+              <input
+                type="text"
+                id="ticker-input"
+                placeholder="티커 (예: ORCL, ARM)"
+                maxlength="10"
+                class="w-28 sm:w-36 bg-gray-900/90 border-y border-r border-gray-700/80 text-gray-100 text-xs sm:text-sm px-3 py-2 focus:outline-none focus:border-blue-500 placeholder-gray-500 uppercase font-mono"
+              />
+              <button
+                type="submit"
+                class="bg-gray-800 hover:bg-gray-700 text-gray-200 border border-l-0 border-gray-700/80 text-xs sm:text-sm font-medium px-3 py-2 rounded-r-xl transition whitespace-nowrap cursor-pointer"
+              >
+                + 추가
+              </button>
+            </div>
+          </form>
+
+          <button
+            id="reanalyze-btn"
+            onclick="runReanalysis()"
+            class="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white shadow-lg shadow-blue-600/20 transition cursor-pointer"
+          >
+            <svg id="reanalyze-icon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            <span id="reanalyze-text">실시간 AI 재분석 실행</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+    <!-- 2. Section 1: 지수 현·선물(S&P 500, NASDAQ 100, ES, NQ) & 매크로 지표 스트립 -->
+    <section class="space-y-4">
+      <!-- 상단 현·선물 핵심 바 (4열) -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4" id="index-futures-strip">
+        <!-- JS로 렌더링 -->
+      </div>
+
+      <!-- 보조 매크로 & 야간 선물 방향성 요약 바 -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4" id="macro-strip">
+        <!-- JS로 렌더링 -->
+      </div>
+
+      <!-- 나스닥(QQQ) & S&P 500 핵심 이슈 & 3단계 기간별 방향성 예측 카드 -->
+      <div class="bg-[#111827] border border-gray-800/90 rounded-2xl p-4 sm:p-6 shadow-xl">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-4 border-b border-gray-800">
+          <div>
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider rounded bg-cyan-500/15 text-cyan-400 border border-cyan-500/30">MARKET PULSE & DIRECTION</span>
+              <h2 class="text-base sm:text-lg font-bold text-white">나스닥(NQ/QQQ) · S&P 500(ES) 핵심 이슈 & 기간별 방향성 예측</h2>
+            </div>
+            <p class="text-xs sm:text-sm text-gray-400 mt-1" id="market-headline-summary">
+              AI 섹터 단기 조정 이후 선물 시장(NQ +2.81%, ES +1.96%) 중심의 강한 반발 매수세 유입 · 비AI 가치주 방어력 및 2027년 실적 성장 모멘텀 주목
+            </p>
+          </div>
+          <div class="flex items-center gap-2 text-xs text-gray-300 bg-gray-900/90 px-3 py-1.5 rounded-xl border border-gray-800 self-start lg:self-center shrink-0">
+            <span class="w-2 h-2 rounded-full bg-cyan-400"></span>
+            <span>선물 베이시스: <strong class="text-emerald-400 font-mono">선물 반등 우위 (Contango)</strong></span>
+          </div>
+        </div>
+
+        <!-- 단기 / 중기 / 장기 3개 방향성 예측 카드 -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-4" id="horizon-cards-container">
+          <!-- JS로 렌더링 -->
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. Section 2 & 3: 개별 종목 분석 (🔥 지금 핫한 주식 vs 🗂️ 테마별 대표 대기업) & AI 딥다이브 패널 -->
+    <section class="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
+
+      <!-- 좌측/상단: 개별 종목 뷰 컨테이너 (7컬럼) -->
+      <div class="xl:col-span-7 bg-[#111827] border border-gray-800/90 rounded-2xl overflow-hidden shadow-xl">
+        <!-- 상단 보기 모드 전환 헤더 -->
+        <div class="p-4 sm:p-5 border-b border-gray-800 space-y-3.5">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h2 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+                <span>개별 종목 AI 분석 & 테마별 리더</span>
+                <span id="watchlist-count" class="text-xs font-mono px-2 py-0.5 rounded-full bg-gray-800 text-gray-300">16종목</span>
+              </h2>
+              <p class="text-xs text-gray-400 mt-0.5">핫한 주도주 흐름과 5대 핵심 테마별 대표 대기업을 전환하며 비교할 수 있습니다.</p>
+            </div>
+
+            <!-- 메인 뷰 모드 스위치 (지금 핫한 주식 vs 테마별 대표 대기업) -->
+            <div class="inline-flex p-1 rounded-xl bg-gray-950 border border-gray-800 self-start sm:self-auto" id="view-mode-switch">
+              <button
+                data-mode="HOT"
+                onclick="switchViewMode('HOT')"
+                class="view-mode-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-600 text-white shadow transition cursor-pointer flex items-center gap-1.5"
+              >
+                <span>🔥 지금 핫한 주식</span>
+              </button>
+              <button
+                data-mode="THEMES"
+                onclick="switchViewMode('THEMES')"
+                class="view-mode-btn px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-400 hover:text-white transition cursor-pointer flex items-center gap-1.5"
+              >
+                <span>🗂️ 테마별 대표 대기업</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 모드 1용 등급 필터 바 -->
+          <div id="hot-filter-bar" class="flex flex-wrap items-center justify-between gap-2 pt-1">
+            <div class="flex flex-wrap items-center gap-1 bg-gray-900 p-1 rounded-xl border border-gray-800" id="filter-tabs">
+              <button data-filter="ALL" class="filter-btn active px-2.5 py-1 rounded-lg text-xs font-semibold bg-gray-800 text-white transition cursor-pointer">전체 핫종목</button>
+              <button data-filter="STRONG_BUY" class="filter-btn px-2.5 py-1 rounded-lg text-xs font-medium text-gray-400 hover:text-white transition cursor-pointer">강력 매수</button>
+              <button data-filter="ACCUMULATE" class="filter-btn px-2.5 py-1 rounded-lg text-xs font-medium text-gray-400 hover:text-white transition cursor-pointer">분할 매수</button>
+              <button data-filter="HOLD_CAUTION" class="filter-btn px-2.5 py-1 rounded-lg text-xs font-medium text-gray-400 hover:text-white transition cursor-pointer">관망·주의</button>
+            </div>
+            <span class="text-[11px] text-gray-400">정렬: <strong class="text-gray-200">시장 화제성 · 종합 AI 점수순</strong></span>
+          </div>
+
+          <!-- 모드 2용 테마 필터 바 (초기 숨김) -->
+          <div id="theme-filter-bar" class="hidden flex flex-wrap items-center gap-1.5 pt-1">
+            <button data-theme="ALL" onclick="selectThemeFilter('ALL')" class="theme-pill active px-2.5 py-1 rounded-lg text-xs font-semibold bg-cyan-600/25 text-cyan-300 border border-cyan-500/40 transition cursor-pointer">전체 테마 (5)</button>
+            <button data-theme="AI 반도체" onclick="selectThemeFilter('AI 반도체')" class="theme-pill px-2.5 py-1 rounded-lg text-xs font-medium bg-gray-900 text-gray-400 border border-gray-800 hover:text-white transition cursor-pointer">AI 반도체</button>
+            <button data-theme="빅테크 클라우드" onclick="selectThemeFilter('빅테크 클라우드')" class="theme-pill px-2.5 py-1 rounded-lg text-xs font-medium bg-gray-900 text-gray-400 border border-gray-800 hover:text-white transition cursor-pointer">빅테크 클라우드</button>
+            <button data-theme="온디바이스" onclick="selectThemeFilter('온디바이스')" class="theme-pill px-2.5 py-1 rounded-lg text-xs font-medium bg-gray-900 text-gray-400 border border-gray-800 hover:text-white transition cursor-pointer">온디바이스</button>
+            <button data-theme="전력·인프라" onclick="selectThemeFilter('전력·인프라')" class="theme-pill px-2.5 py-1 rounded-lg text-xs font-medium bg-gray-900 text-gray-400 border border-gray-800 hover:text-white transition cursor-pointer">전력·인프라</button>
+            <button data-theme="자율주행·SW" onclick="selectThemeFilter('자율주행·SW')" class="theme-pill px-2.5 py-1 rounded-lg text-xs font-medium bg-gray-900 text-gray-400 border border-gray-800 hover:text-white transition cursor-pointer">자율주행·SW</button>
+          </div>
+        </div>
+
+        <!-- 뷰 1: 🔥 지금 핫한 주식 테이블 -->
+        <div id="hot-stocks-view" class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="border-b border-gray-800/90 bg-gray-900/50 text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
+                <th class="py-3 px-4">티커 / 핫 이슈</th>
+                <th class="py-3 px-3 text-right">현재가</th>
+                <th class="py-3 px-2.5 text-center">단기</th>
+                <th class="py-3 px-2.5 text-center">중기</th>
+                <th class="py-3 px-2.5 text-center">장기</th>
+                <th class="py-3 px-3 text-center">종합 AI 판단</th>
+              </tr>
+            </thead>
+            <tbody id="watchlist-tbody" class="divide-y divide-gray-800/70 text-sm">
+              <!-- JS로 렌더링 -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- 뷰 2: 🗂️ 테마별 대표 대기업 섹션 리스트 (초기 숨김) -->
+        <div id="theme-leaders-view" class="hidden p-4 sm:p-5 space-y-5 max-h-[820px] overflow-y-auto">
+          <!-- JS로 테마별 그룹 렌더링 -->
+        </div>
+      </div>
+
+      <!-- 우측/하단: 개별 종목 AI 딥다이브 & 기간별 판단 시뮬레이터 (5컬럼) -->
+      <div class="xl:col-span-5 bg-[#111827] border border-gray-800/90 rounded-2xl p-4 sm:p-6 shadow-xl space-y-5" id="deep-dive-panel">
+        <!-- JS로 선택된 종목 상세 렌더링 -->
+      </div>
+    </section>
+
+    <!-- 4. Section 4: 내 서버에서 실제 데이터로 구동하기 (Full-Stack 아키텍처 & 코드 가이드) -->
+    <section class="bg-[#111827] border border-gray-800/90 rounded-2xl overflow-hidden shadow-xl">
+      <button
+        id="toggle-dev-guide"
+        onclick="toggleDevGuide()"
+        class="w-full px-5 py-4 flex items-center justify-between text-left hover:bg-gray-800/40 transition cursor-pointer"
+      >
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg bg-indigo-500/15 border border-indigo-500/30 flex items-center justify-center text-indigo-400 font-mono text-sm font-bold">
+            &lt;/&gt;
+          </div>
+          <div>
+            <h3 class="text-sm sm:text-base font-bold text-white">내 PC/서버에서 실제 실시간 데이터로 구동하기 (Python FastAPI + Gemini API 연동 가이드)</h3>
+            <p class="text-xs text-gray-400 mt-0.5">현재 대시보드 UI에 실제 yfinance 주가·재무 데이터와 Gemini AI 분석 엔진을 연결하는 전체 백엔드 코드</p>
+          </div>
+        </div>
+        <span id="dev-guide-chevron" class="text-gray-400 text-xs font-medium px-3 py-1.5 rounded-lg bg-gray-900 border border-gray-800">
+          코드 펼쳐보기 ▼
+        </span>
+      </button>
+
+      <div id="dev-guide-content" class="hidden border-t border-gray-800 p-5 space-y-4 bg-[#0d1322]">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+          <div class="p-3.5 rounded-xl bg-gray-900/90 border border-gray-800">
+            <span class="text-blue-400 font-bold block mb-1">1. 패키지 설치</span>
+            <code class="text-gray-300 font-mono block bg-black/40 p-2 rounded-lg mt-1">pip install fastapi uvicorn yfinance pandas google-genai</code>
+          </div>
+          <div class="p-3.5 rounded-xl bg-gray-900/90 border border-gray-800">
+            <span class="text-emerald-400 font-bold block mb-1">2. API 키 환경변수 등록</span>
+            <code class="text-gray-300 font-mono block bg-black/40 p-2 rounded-lg mt-1">export GEMINI_API_KEY="AIzaSy..."</code>
+          </div>
+          <div class="p-3.5 rounded-xl bg-gray-900/90 border border-gray-800">
+            <span class="text-amber-400 font-bold block mb-1">3. FastAPI 서버 실행</span>
+            <code class="text-gray-300 font-mono block bg-black/40 p-2 rounded-lg mt-1">uvicorn server:app --reload --port 8000</code>
+          </div>
+        </div>
+
+        <div class="relative rounded-xl bg-[#080b12] border border-gray-800 overflow-hidden">
+          <div class="flex items-center justify-between px-4 py-2.5 bg-gray-900/90 border-b border-gray-800">
+            <span class="text-xs font-mono text-gray-300">server.py — 실시간 나스닥·빅테크 데이터 수집 및 Gemini JSON 분석 API</span>
+            <button
+              onclick="copyBackendCode()"
+              class="text-xs font-medium px-3 py-1 rounded-lg bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 border border-blue-500/30 transition cursor-pointer"
+            >
+              코드 복사하기
+            </button>
+          </div>
+          <pre id="backend-code-block" class="p-4 text-xs font-mono text-gray-300 overflow-x-auto leading-relaxed"><code>import os
+import json
+import yfinance as yf
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from google import genai
+from google.genai import types
+
+app = FastAPI(title="NASDAQ AI Terminal Backend")
+app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+
+client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
+
+def collect_ticker_metrics(ticker: str) -> dict:
+    stock = yf.Ticker(ticker)
+    hist = stock.history(period="1y")
+    close = hist["Close"]
+    
+    # 이동평균선 & 14일 RSI 계산
+    ma20 = float(close.rolling(20).mean().iloc[-1])
+    ma60 = float(close.rolling(60).mean().iloc[-1])
+    ma120 = float(close.rolling(120).mean().iloc[-1])
+    price = float(close.iloc[-1])
+    prev_close = float(close.iloc[-2])
+    change_pct = ((price - prev_close) / prev_close) * 100
+
+    delta = close.diff()
+    gain = delta.where(delta > 0, 0).rolling(14).mean()
+    loss = (-delta.where(delta < 0, 0)).rolling(14).mean()
+    rsi = float((100 - (100 / (1 + (gain / loss)))).iloc[-1])
+
+    info = stock.info
+    news = [n.get("title", "") for n in (stock.news or [])[:5]]
+
+    return {
+        "ticker": ticker.upper(),
+        "name": info.get("shortName", ticker.upper()),
+        "price": round(price, 2),
+        "changePct": round(change_pct, 2),
+        "ma20": round(ma20, 2),
+        "ma60": round(ma60, 2),
+        "ma120": round(ma120, 2),
+        "rsi": round(rsi, 1),
+        "forwardPE": round(info.get("forwardPE", 0) or 0, 1),
+        "revGrowth": round((info.get("revenueGrowth", 0) or 0) * 100, 1),
+        "opMargin": round((info.get("operatingMargins", 0) or 0) * 100, 1),
+        "news": news
+    }
+
+@app.get("/api/analyze")
+def analyze_market(tickers: str = "QQQ,NVDA,AVGO,AMD,TSM,MSFT,GOOGL,AMZN,META,AAPL,QCOM,GEV,VRT,ETN,TSLA,PLTR,CRM"):
+    ticker_list = [t.strip().upper() for t in tickers.split(",") if t.strip()]
+    raw_data = [collect_ticker_metrics(t) for t in ticker_list]
+
+    prompt = f"""
+    당신은 월스트리트 시니어 퀀트 애널리스트입니다.
+    다음 미국 증시 종목들의 실시간 지표와 뉴스를 분석하여 단기(1주~1개월), 중기(3~12개월), 장기(1~3년+) 점수(0~100)와
+    투자 판단 근거(한국어)를 JSON으로 반환하세요.
+    데이터: {json.dumps(raw_data, ensure_ascii=False)}
+    """
+
+    response = client.models.generate_content(
+        model="gemini-2.5-flash",
+        contents=prompt,
+        config=types.GenerateContentConfig(response_mime_type="application/json")
+    )
+    return {"metrics": raw_data, "ai_analysis": json.loads(response.text)}</code></pre>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    // ==========================================
+    // 1. 초기 상태 및 시장·종목 데이터 모델
+    // ==========================================
+    let indexFuturesData = [
+      {
+        id: 'sp500_spot',
+        badge: '현물 INDEX',
+        badgeColor: 'bg-gray-800 text-gray-300 border-gray-700',
+        label: 'S&P 500 현물 (SPX)',
+        value: '6,910.39',
+        change: '-0.38%',
+        isPositive: false,
+        sub: '비AI 가치주 방어 · 6,900 지지 테스트'
+      },
+      {
+        id: 'sp500_fut',
+        badge: '선물 FUTURES',
+        badgeColor: 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30',
+        label: 'S&P 500 선물 (ES)',
+        value: '7,070.75',
+        change: '+1.96%',
+        isPositive: true,
+        sub: '현물 대비 +160.36pt 강세 · 반등 선도'
+      },
+      {
+        id: 'ndx_spot',
+        badge: '현물 INDEX / ETF',
+        badgeColor: 'bg-gray-800 text-gray-300 border-gray-700',
+        label: 'NASDAQ 100 (NDX / QQQ)',
+        value: '25,028.98',
+        change: 'QQQ $608.45',
+        isPositive: false,
+        sub: '단기 기술주 매물 소화 후 바닥 다지기'
+      },
+      {
+        id: 'ndx_fut',
+        badge: '선물 FUTURES',
+        badgeColor: 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30',
+        label: 'NASDAQ 100 선물 (NQ)',
+        value: '25,832.50',
+        change: '+2.81%',
+        isPositive: true,
+        sub: '현물 대비 +803.5pt 급반등 · 기술주 저가매수'
+      }
+    ];
+
+    let macroIndicators = [
+      {
+        id: 'basis_signal',
+        label: '현·선물 괴리율 시그널',
+        value: '선물 반등 우위',
+        change: 'NQ +2.81%',
+        isPositive: true,
+        sub: '야간 선물 강한 매수 유입 → 갭상승 출발 시사'
+      },
+      {
+        id: 'us10y',
+        label: '미국채 10년물 금리',
+        value: '4.19%',
+        change: '-0.05%p',
+        isPositive: true,
+        sub: '금리 안정화로 성장주 할인율 압력 완화'
+      },
+      {
+        id: 'vix',
+        label: 'CBOE VIX (변동성)',
+        value: '16.45',
+        change: '-8.20%',
+        isPositive: true,
+        sub: '단기 공포 진정 · 20선 하회 안정권 복귀'
+      },
+      {
+        id: 'usdkrw',
+        label: '원/달러 환율 (USD/KRW)',
+        value: '1,392.40원',
+        change: '-3.60원',
+        isPositive: true,
+        sub: '위험자산 선호 회복에 따른 원화 강세 전환'
+      }
+    ];
+
+    let horizonOutlooks = [
+      {
+        horizon: '단기 전망 (1주 – 1개월)',
+        directionLabel: '변동성 장세 속 기술적 반등 시도',
+        directionSub: '횡보 / 반등 혼조',
+        directionArrow: '↗',
+        targetBand: 'NQ 24,500 – 26,500  |  ES 6,800 – 7,200',
+        expectedReturn: '예상 밴드 등락: -2.0% ~ +4.5%',
+        badgeType: 'amber',
+        confidence: 76,
+        catalysts: [
+          '11월 AI 섹터 단기 급락 이후 선물(NQ +2.81%, ES +1.96%) 중심 저가 매수세 유입',
+          '헬스케어·산업재·금융 등 비AI 가치주의 견고한 하방 경직성 확보',
+          '단기 반등 시 기존 고점 부근 대기 매물 소화 과정 및 변동성 관리 필요'
+        ],
+        strategy: '선물 갭상승 추격보다 장중 눌림목(NQ 25,200선 지지) 확인 후 분할 접근'
+      },
+      {
+        horizon: '중기 전망 (3개월 – 1년)',
+        directionLabel: '완만한 우상향 복귀',
+        directionSub: '상승 추세 전환',
+        directionArrow: '▲',
+        targetBand: 'S&P500 7,500 – 8,500  |  NQ 27,800+',
+        expectedReturn: '예상 상승 여력: +8.5% ~ +16.0%',
+        badgeType: 'emerald',
+        confidence: 87,
+        catalysts: [
+          '2027년 S&P500 및 빅테크 기업 이익(EPS) 성장률 컨센서스 +11%~18% 견인',
+          'AI 하드웨어에서 엔터프라이즈 AI 소프트웨어·전력 인프라로 섹터 순환매 확산',
+          '연준의 중립 금리 안착으로 기업 설비투자(CAPEX) 조달 환경 우호적 지속'
+        ],
+        strategy: '실적 추정치가 상향되는 AI 인프라·클라우드·전력 리더 비중 적극 확대'
+      },
+      {
+        horizon: '장기 전망 (1년 – 3년 이상)',
+        directionLabel: '구조적 강세장 지속',
+        directionSub: '강한 우상향 궤도',
+        directionArrow: '▲▲',
+        targetBand: 'S&P500 9,000 – 10,000 목표',
+        expectedReturn: '연평균 기대수익률(CAGR): +12% ~ +15%',
+        badgeType: 'blue',
+        confidence: 93,
+        catalysts: [
+          'AI 데이터센터 인프라 구축 완료 후 전 산업 에이전트 AI·로보틱스 수익화 본격화',
+          '빅테크 최상위 기업들의 압도적 잉여현금흐름(FCF) 및 자사주 소각 지속',
+          '글로벌 AI 표준 및 전력·반도체 공급망을 장악한 독점 플랫폼의 구조적 해자'
+        ],
+        strategy: '단기 매크로 노이즈에 흔들리지 않고 테마별 1등 대기업 적립식 장기 보유'
+      }
+    ];
+
+    // 5대 테마 메타 정보
+    const themeCatalog = {
+      'AI 반도체': {
+        title: '1. AI 반도체 & 하드웨어',
+        icon: '⚡',
+        momentum: '선물 반등 주도 · 실적 가시성 최상위',
+        horizonSummary: '단기 변동성 소화 후 중·장기 강한 우상향',
+        badgeColor: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/30'
+      },
+      '빅테크 클라우드': {
+        title: '2. 빅테크 클라우드 & AI 플랫폼',
+        icon: '☁️',
+        momentum: 'AI 수익화 검증 · FCF 방어력 우수',
+        horizonSummary: '단기 횡보/반등 · 중·장기 견조한 상승',
+        badgeColor: 'text-blue-400 bg-blue-500/10 border-blue-500/30'
+      },
+      '온디바이스': {
+        title: '3. 온디바이스 AI & 디바이스 생태계',
+        icon: '📱',
+        momentum: '서비스 매출 안정 · 교체 수요 점진 확대',
+        horizonSummary: '단기 보합 · 중·장기 완만한 우상향',
+        badgeColor: 'text-indigo-400 bg-indigo-500/10 border-indigo-500/30'
+      },
+      '전력·인프라': {
+        title: '4. AI 데이터센터 전력·인프라',
+        icon: '🔌',
+        momentum: '수주 잔고 역대 최대 · AI 병목 핵심 수혜',
+        horizonSummary: '단·중·장기 전 구간 구조적 상승 추세',
+        badgeColor: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30'
+      },
+      '자율주행·SW': {
+        title: '5. 자율주행·로보틱스 & 엔터프라이즈 SW',
+        icon: '🤖',
+        momentum: '에이전트 AI 도입 가속 · 높은 탄력성',
+        horizonSummary: '단기 고변동성 · 중·장기 고성장 확장',
+        badgeColor: 'text-amber-400 bg-amber-500/10 border-amber-500/30'
+      }
+    };
+
+    let stocksData = [
+      // 1) AI 반도체 & 하드웨어
+      {
+        ticker: 'NVDA',
+        name: 'NVIDIA Corp.',
+        theme: 'AI 반도체',
+        sector: 'AI 가속기 · 데이터센터 풀스택',
+        isHot: true,
+        hotTag: 'AI 인프라 반등 선도',
+        hotRank: 1,
+        price: 184.20,
+        changePct: 3.45,
+        shortScore: 81,
+        midScore: 94,
+        longScore: 96,
+        shortDir: '기술적 반등 (↗)',
+        midDir: '강한 우상향 (▲)',
+        longDir: '구조적 강세 (▲▲)',
+        ma20: 178.50,
+        ma60: 169.20,
+        ma120: 154.80,
+        rsi: 58.4,
+        forwardPE: 31.5,
+        revGrowth: 68.4,
+        opMargin: 62.8,
+        oneLiner: '차세대 AI 서버 랙 출하 본격화 및 2027년 하이퍼스케일러 CAPEX 상향의 최대 수혜주',
+        shortNote: '11월 단기 매물 소화 이후 나스닥 선물 반등과 함께 20일선 안착 시도.',
+        midNote: '클라우드 4사의 AI 설비투자 증액으로 분기별 EPS 컨센서스 지속 상향.',
+        longNote: 'CUDA 생태계와 네트워킹·소프트웨어 통합 플랫폼 해자로 독점적 지위 유지.',
+        news: [
+          { title: '나스닥 선물 반등 속 엔비디아 프리마켓 3%대 강세… 저가 매수세 집중', sentiment: '긍정' },
+          { title: '2027년 AI 데이터센터 투자 전망치 상향에 차세대 GPU 수주 잔고 견고', sentiment: '긍정' }
+        ]
+      },
+      {
+        ticker: 'AVGO',
+        name: 'Broadcom Inc.',
+        theme: 'AI 반도체',
+        sector: '커스텀 AI 칩(ASIC) · AI 네트워킹',
+        isHot: true,
+        hotTag: '빅테크 자체칩 수주 급증',
+        hotRank: 3,
+        price: 214.60,
+        changePct: 2.88,
+        shortScore: 79,
+        midScore: 91,
+        longScore: 92,
+        shortDir: '반등 우위 (↗)',
+        midDir: '우상향 지속 (▲)',
+        longDir: '강한 우상향 (▲▲)',
+        ma20: 206.40,
+        ma60: 195.80,
+        ma120: 181.20,
+        rsi: 59.1,
+        forwardPE: 29.4,
+        revGrowth: 38.2,
+        opMargin: 55.4,
+        oneLiner: '빅테크 맞춤형 AI 가속기(ASIC) 설계 독점력과 고마진 인프라 SW 시너지 극대화',
+        shortNote: '60일선 지지 확인 후 빠른 반등세 연출, 수급 탄력성 우수.',
+        midNote: '구글·메타 등 주요 고객사의 차세대 자체 AI 칩 양산 확대로 실적 레벨업.',
+        longNote: 'AI 데이터센터 초고속 네트워킹 스위치 시장 지배력과 높은 잉여현금흐름.',
+        news: [
+          { title: '빅테크 자체 AI 칩 개발 경쟁 심화로 브로드컴 커스텀 실리콘 매출 급증', sentiment: '긍정' },
+          { title: 'AI 네트워크 트래픽 폭증에 따른 차세대 이더넷 스위치 수요 호조', sentiment: '긍정' }
+        ]
+      },
+      {
+        ticker: 'AMD',
+        name: 'Advanced Micro Devices',
+        theme: 'AI 반도체',
+        sector: '데이터센터 GPU · 서버용 CPU',
+        isHot: false,
+        hotTag: '서버 CPU 점유율 확대',
+        hotRank: 11,
+        price: 162.80,
+        changePct: 2.15,
+        shortScore: 72,
+        midScore: 83,
+        longScore: 85,
+        shortDir: '횡보/반등 (↗)',
+        midDir: '완만한 상승 (▲)',
+        longDir: '우상향 (▲)',
+        ma20: 160.10,
+        ma60: 156.40,
+        ma120: 151.90,
+        rsi: 53.6,
+        forwardPE: 27.8,
+        revGrowth: 24.5,
+        opMargin: 23.4,
+        oneLiner: '엔터프라이즈 서버 CPU 점유율 확대 및 추론용 AI GPU 시장 내 대안 입지 강화',
+        shortNote: '이평선 밀집 구간 상단 돌파 시도, 거래량 동반 여부 확인 필요.',
+        midNote: 'AI 추론 워크로드 확산에 따른 Instinct 가속기 채택 기업 증가.',
+        longNote: 'CPU·GPU·FPGA 포트폴리오 통합을 통한 데이터센터 점유율 장기 확장.',
+        news: [
+          { title: '클라우드 기업들의 AI 추론 인프라 다변화 전략 속 AMD 채택 확대', sentiment: '긍정' },
+          { title: 'PC 및 임베디드 부문 점진적 회복세로 전체 영업이익률 개선', sentiment: '중립' }
+        ]
+      },
+      {
+        ticker: 'TSM',
+        name: 'Taiwan Semiconductor',
+        theme: 'AI 반도체',
+        sector: '첨단 파운드리 · CoWoS 패키징',
+        isHot: true,
+        hotTag: '첨단 패키징 캐파 완판',
+        hotRank: 6,
+        price: 218.40,
+        changePct: 2.42,
+        shortScore: 78,
+        midScore: 90,
+        longScore: 93,
+        shortDir: '반등 시도 (↗)',
+        midDir: '우상향 (▲)',
+        longDir: '강한 우상향 (▲▲)',
+        ma20: 211.90,
+        ma60: 201.50,
+        ma120: 186.70,
+        rsi: 57.9,
+        forwardPE: 23.6,
+        revGrowth: 32.8,
+        opMargin: 47.2,
+        oneLiner: '2나노 공정 및 CoWoS 첨단 패키징 독점으로 모든 AI 칩 성장의 최종 관문',
+        shortNote: '20일선 회복세 뚜렷하며 밸류에이션(PER 23배) 매력 부각.',
+        midNote: '첨단 패키징 증설 물량 가동으로 분기 매출 및 마진율 가이던스 상회 지속.',
+        longNote: '초미세 공정 기술 격차로 글로벌 빅테크의 파운드리 의존도 심화.',
+        news: [
+          { title: 'TSMC 2나노 공정 수율 순항 및 주요 빅테크 선주문 물량 조기 마감', sentiment: '긍정' },
+          { title: '미국·일본 해외 팹 가동 비용에도 첨단 공정 단가 인상으로 마진 방어', sentiment: '긍정' }
+        ]
+      },
+
+      // 2) 빅테크 클라우드 & AI 플랫폼
+      {
+        ticker: 'MSFT',
+        name: 'Microsoft Corp.',
+        theme: '빅테크 클라우드',
+        sector: 'Azure 클라우드 · 엔터프라이즈 AI',
+        isHot: true,
+        hotTag: '클라우드 수익화 안정',
+        hotRank: 4,
+        price: 468.50,
+        changePct: 1.54,
+        shortScore: 75,
+        midScore: 88,
+        longScore: 92,
+        shortDir: '완만한 반등 (↗)',
+        midDir: '우상향 복귀 (▲)',
+        longDir: '구조적 강세 (▲▲)',
+        ma20: 461.20,
+        ma60: 454.80,
+        ma120: 443.10,
+        rsi: 55.2,
+        forwardPE: 30.8,
+        revGrowth: 16.8,
+        opMargin: 45.1,
+        oneLiner: 'Azure AI 매출 비중 확대와 기업용 AI 에이전트 구독 모델 안착으로 견조한 성장',
+        shortNote: '이평선 정배열 유지 속 안정적 방어력 및 완만한 반등 흐름.',
+        midNote: 'AI 데이터센터 인프라 가동률 상승으로 하반기 클라우드 성장률 재가속.',
+        longNote: '전 세계 기업 워크플로우를 장악한 독점적 B2B 소프트웨어 생태계.',
+        news: [
+          { title: 'MS Azure AI 서비스 고객사 및 엔터프라이즈 에이전트 도입률 가파른 상승', sentiment: '긍정' },
+          { title: '고수익 클라우드 매출 비중 확대로 자본지출 증가분 상쇄', sentiment: '긍정' }
+        ]
+      },
+      {
+        ticker: 'GOOGL',
+        name: 'Alphabet Inc.',
+        theme: '빅테크 클라우드',
+        sector: '검색 · 유튜브 · GCP 클라우드',
+        isHot: false,
+        hotTag: '빅테크 최저 밸류에이션',
+        hotRank: 9,
+        price: 194.30,
+        changePct: 1.28,
+        shortScore: 71,
+        midScore: 84,
+        longScore: 88,
+        shortDir: '박스권 상단 돌파 (↗)',
+        midDir: '우상향 (▲)',
+        longDir: '우상향 (▲)',
+        ma20: 190.80,
+        ma60: 184.60,
+        ma120: 179.40,
+        rsi: 54.8,
+        forwardPE: 21.4,
+        revGrowth: 15.6,
+        opMargin: 33.1,
+        oneLiner: '구글 클라우드 영업이익 급증 및 웨이모 자율주행 가치 부각, 매력적 PER 구간',
+        shortNote: '20일선 위 안정적 추세 유지, 규제 노이즈 둔화 시 멀티플 회복 여력.',
+        midNote: '제미나이 기반 검색 광고 효율 개선 및 GCP 수익성 고공행진.',
+        longNote: '자체 TPU 칩부터 검색·유튜브·자율주행까지 수직 계열화된 AI 역량 보유.',
+        news: [
+          { title: '구글 클라우드 분기 매출 34% 성장… 영업이익률 사상 최고치 경신', sentiment: '긍정' },
+          { title: '웨이모 유료 로보택시 주간 운행 건수 급증하며 사업화 속도', sentiment: '긍정' }
+        ]
+      },
+      {
+        ticker: 'AMZN',
+        name: 'Amazon.com Inc.',
+        theme: '빅테크 클라우드',
+        sector: 'AWS 클라우드 · 이커머스 물류',
+        isHot: true,
+        hotTag: 'AWS 마진·수익성 서프라이즈',
+        hotRank: 5,
+        price: 234.80,
+        changePct: 2.12,
+        shortScore: 79,
+        midScore: 89,
+        longScore: 91,
+        shortDir: '반등 우위 (↗)',
+        midDir: '강한 우상향 (▲)',
+        longDir: '구조적 강세 (▲▲)',
+        ma20: 227.50,
+        ma60: 216.90,
+        ma120: 204.30,
+        rsi: 60.4,
+        forwardPE: 32.1,
+        revGrowth: 12.4,
+        opMargin: 11.8,
+        oneLiner: 'AWS AI 워크로드 급증과 물류 로보틱스 자동화로 전사 영업이익률 구조적 레벨업',
+        shortNote: '단기 눌림목 이후 빠른 회복 탄력성 시현, 수급 양호.',
+        midNote: '고마진 광고·AWS 매출 비중 확대로 잉여현금흐름(FCF) 폭발적 증가.',
+        longNote: '글로벌 클라우드 1위와 북미 물류 인프라 해자의 압도적 결합.',
+        news: [
+          { title: '아마존 AWS 자체 AI 칩 트레이니움 채택 확산… 클라우드 성장 견인', sentiment: '긍정' },
+          { title: '물류 센터 AI·로봇 자동화 도입으로 북미 리테일 수익성 대폭 개선', sentiment: '긍정' }
+        ]
+      },
+      {
+        ticker: 'META',
+        name: 'Meta Platforms Inc.',
+        theme: '빅테크 클라우드',
+        sector: '소셜 플랫폼 · AI 광고 · Llama',
+        isHot: false,
+        hotTag: 'AI 광고 ROI 극대화',
+        hotRank: 8,
+        price: 628.40,
+        changePct: 1.65,
+        shortScore: 73,
+        midScore: 86,
+        longScore: 89,
+        shortDir: '횡보 후 반등 (↗)',
+        midDir: '우상향 (▲)',
+        longDir: '우상향 (▲)',
+        ma20: 621.00,
+        ma60: 604.50,
+        ma120: 572.80,
+        rsi: 55.7,
+        forwardPE: 24.8,
+        revGrowth: 19.2,
+        opMargin: 43.4,
+        oneLiner: 'AI 추천 알고리즘으로 사용자 체류시간 및 광고 단가 동반 상승, 높은 현금창출력',
+        shortNote: '620달러 지지선 확인 후 완만한 반등 시도.',
+        midNote: '릴스·스레드 수익화 및 AI 비즈니스 메시징 매출 본격 반영.',
+        longNote: '오픈소스 AI 표준(Llama) 확보 및 차세대 AI 스마트글래스 시장 선도.',
+        news: [
+          { title: '메타 AI 기반 광고 자동화 툴 도입 광고주 급증… 전환율 두 자릿수 개선', sentiment: '긍정' },
+          { title: '차세대 AI 인프라 투자 확대 계획에도 탄탄한 광고 현금흐름으로 방어', sentiment: '중립' }
+        ]
+      },
+
+      // 3) 온디바이스 AI & 디바이스 생태계
+      {
+        ticker: 'AAPL',
+        name: 'Apple Inc.',
+        theme: '온디바이스',
+        sector: '온디바이스 AI · 서비스 생태계',
+        isHot: false,
+        hotTag: '서비스 매출·현금흐름 방어',
+        hotRank: 10,
+        price: 242.10,
+        changePct: 0.92,
+        shortScore: 68,
+        midScore: 79,
+        longScore: 86,
+        shortDir: '보합/완만 반등 (→)',
+        midDir: '완만한 우상향 (▲)',
+        longDir: '안정적 우상향 (▲)',
+        ma20: 240.50,
+        ma60: 236.80,
+        ma120: 228.40,
+        rsi: 52.3,
+        forwardPE: 31.4,
+        revGrowth: 6.8,
+        opMargin: 31.8,
+        oneLiner: '22억 대 활성 기기 기반 고마진 서비스 매출 성장과 자사주 매입으로 뛰어난 방어력',
+        shortNote: '변동성 장세에서 지수 대비 낮은 베타로 안정적 하방 경직성 유지.',
+        midNote: '차세대 온디바이스 AI 기능 고도화에 따른 점진적 기기 교체 사이클 기대.',
+        longNote: '독보적인 하드웨어-소프트웨어-서비스 생태계 락인(Lock-in) 효과.',
+        news: [
+          { title: '애플 서비스 부문 분기 매출 사상 최고치 경신… 전체 마진율 견인', sentiment: '긍정' },
+          { title: '글로벌 스마트폰 시장 경쟁 속 프리미엄 라인업 점유율 방어 성공', sentiment: '중립' }
+        ]
+      },
+      {
+        ticker: 'QCOM',
+        name: 'Qualcomm Inc.',
+        theme: '온디바이스',
+        sector: '모바일 AP · AI PC · 오토모티브',
+        isHot: false,
+        hotTag: '온디바이스·전장 다변화',
+        hotRank: 14,
+        price: 174.50,
+        changePct: 1.48,
+        shortScore: 70,
+        midScore: 80,
+        longScore: 83,
+        shortDir: '저점 다지기 (↗)',
+        midDir: '완만한 상승 (▲)',
+        longDir: '우상향 (▲)',
+        ma20: 171.80,
+        ma60: 169.40,
+        ma120: 167.20,
+        rsi: 51.8,
+        forwardPE: 15.8,
+        revGrowth: 13.5,
+        opMargin: 27.6,
+        oneLiner: '온디바이스 AI 칩셋 및 차량용 디지털 콕핏 수주 잔고 확대로 사업 포트폴리오 다변화',
+        shortNote: 'PER 15배 수준의 저평가 매력으로 하락 제한적, 반등 모색 구간.',
+        midNote: 'AI PC 및 차량용 반도체 매출 비중 확대로 스마트폰 의존도 축소.',
+        longNote: '엣지 AI(Edge AI) 확산에 따른 저전력 고성능 NPU 기술 경쟁력 부각.',
+        news: [
+          { title: '퀄컴 오토모티브 부문 분기 매출 전년 대비 50% 이상 고성장 지속', sentiment: '긍정' },
+          { title: '차세대 스냅드래곤 기반 온디바이스 AI 스마트폰 출하량 확대', sentiment: '긍정' }
+        ]
+      },
+
+      // 4) AI 데이터센터 전력·인프라
+      {
+        ticker: 'GEV',
+        name: 'GE Vernova Inc.',
+        theme: '전력·인프라',
+        sector: '가스터빈 · 전력망(Grid) · 원전',
+        isHot: true,
+        hotTag: 'AI 전력망 수주 폭발',
+        hotRank: 2,
+        price: 386.40,
+        changePct: 3.18,
+        shortScore: 84,
+        midScore: 92,
+        longScore: 93,
+        shortDir: '강한 반등 (↗)',
+        midDir: '강한 우상향 (▲)',
+        longDir: '구조적 강세 (▲▲)',
+        ma20: 368.90,
+        ma60: 334.20,
+        ma120: 289.50,
+        rsi: 63.8,
+        forwardPE: 36.2,
+        revGrowth: 14.2,
+        opMargin: 9.8,
+        oneLiner: 'AI 데이터센터 전력 부족의 직접적 해법, 가스터빈 및 초고압 전력망 수주 잔고 급증',
+        shortNote: '비AI 인프라·전력 테마 강세 속 정배열 추세와 강한 기관 수급 지속.',
+        midNote: '북미·유럽 전력망 현대화 및 데이터센터 전용 발전 설비 수주 마진 대폭 개선.',
+        longNote: '탄소중립·원전(SMR)·송배전망을 모두 보유한 글로벌 에너지 전환 핵심 리더.',
+        news: [
+          { title: '빅테크 AI 데이터센터 전력 확보 경쟁에 GE Vernova 가스터빈 수주 2028년까지 완판', sentiment: '긍정' },
+          { title: '전력망(Electrification) 부문 수익성 급반등으로 잉여현금흐름 가이던스 상향', sentiment: '긍정' }
+        ]
+      },
+      {
+        ticker: 'VRT',
+        name: 'Vertiv Holdings Co.',
+        theme: '전력·인프라',
+        sector: '데이터센터 액체냉각 · 전력관리',
+        isHot: true,
+        hotTag: '액체냉각 인프라 핵심주',
+        hotRank: 7,
+        price: 138.90,
+        changePct: 3.62,
+        shortScore: 82,
+        midScore: 90,
+        longScore: 90,
+        shortDir: '탄력적 반등 (↗)',
+        midDir: '우상향 (▲)',
+        longDir: '강한 우상향 (▲▲)',
+        ma20: 131.40,
+        ma60: 121.80,
+        ma120: 108.50,
+        rsi: 61.5,
+        forwardPE: 33.4,
+        revGrowth: 21.8,
+        opMargin: 18.4,
+        oneLiner: '고발열 차세대 AI 서버 필수 인프라인 액체냉각(Liquid Cooling) 시장 글로벌 1위',
+        shortNote: 'AI 반도체 반등과 동조화되며 20일선 상단에서 강한 탄력 시현.',
+        midNote: '차세대 AI 랙당 전력 소비량 급증으로 냉각·UPS 수주 잔고 사상 최대.',
+        longNote: '데이터센터 열관리 및 전력 인프라 표준을 선도하는 고성장 인프라 기업.',
+        news: [
+          { title: '차세대 고밀도 AI 데이터센터 구축 본격화로 버티브 액체냉각 수주 급증', sentiment: '긍정' },
+          { title: '공급망 효율화로 영업이익률 목표치 조기 달성 전망', sentiment: '긍정' }
+        ]
+      },
+      {
+        ticker: 'ETN',
+        name: 'Eaton Corporation',
+        theme: '전력·인프라',
+        sector: '배전 설비 · 변압기 · 산업 전력',
+        isHot: false,
+        hotTag: '북미 전력망·리쇼어링 수혜',
+        hotRank: 13,
+        price: 364.20,
+        changePct: 1.45,
+        shortScore: 76,
+        midScore: 86,
+        longScore: 88,
+        shortDir: '안정적 상승 (↗)',
+        midDir: '우상향 (▲)',
+        longDir: '우상향 (▲)',
+        ma20: 356.80,
+        ma60: 344.10,
+        ma120: 325.90,
+        rsi: 57.2,
+        forwardPE: 29.8,
+        revGrowth: 10.4,
+        opMargin: 21.6,
+        oneLiner: '데이터센터 배전반·변압기 공급 부족 장기화의 대표적 산업재·전력 우량주',
+        shortNote: '변동성 장세에서도 우상향 추세선을 이탈하지 않는 견고한 흐름.',
+        midNote: '북미 데이터센터 및 제조업 리쇼어링 프로젝트의 전기 설비 수주 지속.',
+        longNote: '글로벌 전력 인프라 교체 주기와 맞물린 안정적 배당 성장 및 실적 확장.',
+        news: [
+          { title: '이튼, 북미 데이터센터향 배전 장비 수주 잔고 전년 대비 30% 증가', sentiment: '긍정' },
+          { title: '변압기 및 개폐기 생산 능력 증설 투자를 통한 중장기 매출 가시성 확보', sentiment: '긍정' }
+        ]
+      },
+
+      // 5) 자율주행·로보틱스 & 엔터프라이즈 SW
+      {
+        ticker: 'TSLA',
+        name: 'Tesla Inc.',
+        theme: '자율주행·SW',
+        sector: '자율주행(FSD) · 휴머노이드 · ESS',
+        isHot: true,
+        hotTag: 'FSD·로보틱스 고변동성',
+        hotRank: 8,
+        price: 348.50,
+        changePct: 3.85,
+        shortScore: 76,
+        midScore: 78,
+        longScore: 86,
+        shortDir: '고변동성 반등 (↗)',
+        midDir: '방향성 탐색 (▲)',
+        longDir: '고성장 확장 (▲▲)',
+        ma20: 328.40,
+        ma60: 294.60,
+        ma120: 256.80,
+        rsi: 66.8,
+        forwardPE: 88.4,
+        revGrowth: 11.2,
+        opMargin: 11.4,
+        oneLiner: '실세계 AI 기반 완전자율주행(FSD) 상용화 및 메가팩 에너지 저장장치 급성장',
+        shortNote: '수급 탄력이 매우 크나 높은 밸류에이션과 변동성으로 분할 대응 필수.',
+        midNote: '로보택시 서비스 확장 속도 및 에너지 부문 이익 기여도가 주가 핵심 변수.',
+        longNote: '자율주행 데이터·AI 슈퍼컴퓨팅·옵티머스 로봇을 결합한 피지컬 AI 리더.',
+        news: [
+          { title: '테슬라 메가팩 에너지 저장장치 배치량 사상 최대… 고마진 캐시카우 부상', sentiment: '긍정' },
+          { title: 'FSD 최신 버전 주행 데이터 축적 가속화… 단기 주가 변동성 확대 유의', sentiment: '중립' }
+        ]
+      },
+      {
+        ticker: 'PLTR',
+        name: 'Palantir Technologies',
+        theme: '자율주행·SW',
+        sector: '엔터프라이즈 AI 플랫폼 · 국방 AI',
+        isHot: true,
+        hotTag: '기업용 AIP 도입 폭증',
+        hotRank: 5,
+        price: 68.40,
+        changePct: 4.12,
+        shortScore: 80,
+        midScore: 85,
+        longScore: 87,
+        shortDir: '강한 모멘텀 (↗)',
+        midDir: '우상향 (▲)',
+        longDir: '구조적 성장 (▲▲)',
+        ma20: 62.80,
+        ma60: 53.40,
+        ma120: 42.10,
+        rsi: 67.5,
+        forwardPE: 92.0,
+        revGrowth: 30.4,
+        opMargin: 16.8,
+        oneLiner: '미국 상업용 기업들의 AI 운영체제(AIP) 채택 급증으로 소프트웨어 섹터 주도주 부상',
+        shortNote: '강한 상승 모멘텀 유지 중이나 높은 PER 멀티플에 따른 단기 출렁임 주의.',
+        midNote: '미 국방부 AI 계약 확대 및 미국 상업 부문 고객 수 고성장세 지속.',
+        longNote: '기업 내부 데이터와 생성형 AI를 연결하는 온톨로지 플랫폼의 높은 전환 비용.',
+        news: [
+          { title: '팔란티어 미국 상업 부문 매출 전년 대비 54% 급증… AIP 부트캠프 효과 입증', sentiment: '긍정' },
+          { title: '단기 급등에 따른 밸류에이션 부담 경계감 속 기관 수급 유입 지속', sentiment: '중립' }
+        ]
+      },
+      {
+        ticker: 'CRM',
+        name: 'Salesforce Inc.',
+        theme: '자율주행·SW',
+        sector: '에이전트 AI(Agentforce) · CRM',
+        isHot: false,
+        hotTag: 'AI 에이전트 수익화 선도',
+        hotRank: 12,
+        price: 334.20,
+        changePct: 1.75,
+        shortScore: 74,
+        midScore: 84,
+        longScore: 85,
+        shortDir: '완만한 반등 (↗)',
+        midDir: '우상향 (▲)',
+        longDir: '우상향 (▲)',
+        ma20: 326.50,
+        ma60: 312.40,
+        ma120: 294.80,
+        rsi: 56.9,
+        forwardPE: 28.4,
+        revGrowth: 9.8,
+        opMargin: 20.4,
+        oneLiner: '자율형 AI 에이전트(Agentforce) 상용화로 기존 소프트웨어 기업 중 가장 빠른 AI 수익화',
+        shortNote: '20일선 상단에서 견조한 흐름, 실적 발표 전후 수급 양호.',
+        midNote: '사용량 기반 AI 에이전트 과금 모델 안착으로 매출 성장률 재반등 기대.',
+        longNote: '글로벌 1위 고객관계관리(CRM) 데이터 기반 기업용 AI 에이전트 생태계 구축.',
+        news: [
+          { title: '세일즈포스 에이전트포스(Agentforce) 유료 계약 건수 기대치 상회', sentiment: '긍정' },
+          { title: '비용 효율화 기조 유지하며 영업이익률 및 잉여현금흐름 개선 지속', sentiment: '긍정' }
+        ]
+      }
+    ];
+
+    // 전역 상태
+    let selectedTicker = 'NVDA';
+    let currentViewMode = 'HOT'; // 'HOT' | 'THEMES'
+    let currentFilter = 'ALL'; // 'ALL' | 'STRONG_BUY' | 'ACCUMULATE' | 'HOLD_CAUTION'
+    let currentThemeFilter = 'ALL';
+    let weights = { short: 25, mid: 35, long: 40 };
+
+    // ==========================================
+    // 2. 점수 계산 및 등급 산출 유틸리티
+    // ==========================================
+    function calculateCompositeScore(stock) {
+      const totalWeight = weights.short + weights.mid + weights.long;
+      if (totalWeight === 0) return Math.round((stock.shortScore + stock.midScore + stock.longScore) / 3);
+      const weighted =
+        (stock.shortScore * weights.short +
+          stock.midScore * weights.mid +
+          stock.longScore * weights.long) /
+        totalWeight;
+      return Math.round(weighted);
+    }
+
+    function getJudgmentMeta(score) {
+      if (score >= 85) {
+        return {
+          code: 'STRONG_BUY',
+          label: '강력 매수',
+          badgeClass: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
+          barColor: 'bg-emerald-500'
+        };
+      } else if (score >= 76) {
+        return {
+          code: 'ACCUMULATE',
+          label: '분할 매수',
+          badgeClass: 'bg-blue-500/15 text-blue-400 border-blue-500/30',
+          barColor: 'bg-blue-500'
+        };
+      } else if (score >= 68) {
+        return {
+          code: 'HOLD_CAUTION',
+          label: '관망 · 눌림목 대기',
+          badgeClass: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
+          barColor: 'bg-amber-500'
+        };
+      } else {
+        return {
+          code: 'HOLD_CAUTION',
+          label: '비중 축소 · 주의',
+          badgeClass: 'bg-rose-500/15 text-rose-400 border-rose-500/30',
+          barColor: 'bg-rose-500'
+        };
+      }
+    }
+
+    function getScoreTextColor(score) {
+      if (score >= 85) return 'text-emerald-400';
+      if (score >= 76) return 'text-blue-400';
+      if (score >= 68) return 'text-amber-400';
+      return 'text-rose-400';
+    }
+
+    // ==========================================
+    // 3. UI 렌더링 함수들
+    // ==========================================
+    function renderIndexFuturesAndMacro() {
+      const topContainer = document.getElementById('index-futures-strip');
+      topContainer.innerHTML = indexFuturesData
+        .map((item) => {
+          const isFutures = item.id.includes('fut');
+          return `
+            <div class="bg-[#111827] border ${
+              isFutures ? 'border-cyan-500/35 bg-gradient-to-b from-[#111827] to-cyan-950/15' : 'border-gray-800/90'
+            } rounded-2xl p-4 hover:border-gray-700 transition">
+              <div class="flex items-center justify-between gap-2 mb-1.5">
+                <span class="text-[10px] font-bold px-2 py-0.5 rounded border ${item.badgeColor}">${item.badge}</span>
+                <span class="text-xs font-mono font-bold px-2 py-0.5 rounded-md ${
+                  item.isPositive ? 'bg-emerald-500/15 text-emerald-400' : 'bg-rose-500/15 text-rose-400'
+                }">
+                  ${item.change}
+                </span>
+              </div>
+              <div class="text-xs font-medium text-gray-400 mt-1">${item.label}</div>
+              <div class="text-xl sm:text-2xl font-extrabold font-mono text-white mt-0.5 tracking-tight">${item.value}</div>
+              <div class="text-[11px] text-gray-400 mt-1.5 truncate">${item.sub}</div>
+            </div>
+          `;
+        })
+        .join('');
+
+      const macroContainer = document.getElementById('macro-strip');
+      macroContainer.innerHTML = macroIndicators
+        .map(
+          (item) => `
+          <div class="bg-[#111827]/80 border border-gray-800/80 rounded-xl px-4 py-3 hover:border-gray-700 transition">
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-[11px] font-medium text-gray-400">${item.label}</span>
+              <span class="text-[11px] font-mono font-semibold px-1.5 py-0.5 rounded ${
+                item.isPositive ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'
+              }">
+                ${item.change}
+              </span>
+            </div>
+            <div class="text-base font-bold font-mono text-gray-100 mt-1">${item.value}</div>
+            <div class="text-[11px] text-gray-400 mt-0.5 truncate">${item.sub}</div>
+          </div>
+        `
+        )
+        .join('');
+    }
+
+    function renderHorizonCards() {
+      const container = document.getElementById('horizon-cards-container');
+      const colorMap = {
+        amber: {
+          badge: 'bg-amber-500/15 text-amber-300 border-amber-500/30',
+          dirBox: 'bg-amber-950/30 border-amber-500/25 text-amber-300',
+          bar: 'bg-amber-400',
+          border: 'hover:border-amber-500/40'
+        },
+        emerald: {
+          badge: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30',
+          dirBox: 'bg-emerald-950/30 border-emerald-500/25 text-emerald-300',
+          bar: 'bg-emerald-400',
+          border: 'hover:border-emerald-500/40'
+        },
+        blue: {
+          badge: 'bg-blue-500/15 text-blue-300 border-blue-500/30',
+          dirBox: 'bg-blue-950/30 border-blue-500/25 text-blue-300',
+          bar: 'bg-blue-400',
+          border: 'hover:border-blue-500/40'
+        }
+      };
+
+      container.innerHTML = horizonOutlooks
+        .map((card) => {
+          const style = colorMap[card.badgeType];
+          return `
+            <div class="bg-gray-900/75 border border-gray-800 ${style.border} rounded-xl p-4 flex flex-col justify-between transition">
+              <div>
+                <div class="flex items-center justify-between gap-2 mb-2.5">
+                  <span class="text-xs font-bold text-gray-200">${card.horizon}</span>
+                  <span class="text-[11px] font-semibold px-2.5 py-0.5 rounded-full border ${style.badge}">
+                    ${card.directionSub}
+                  </span>
+                </div>
+
+                <!-- 방향성 예측 & 목표 지수 밴드 하이라이트 박스 -->
+                <div class="p-3 rounded-xl border ${style.dirBox} mb-3">
+                  <div class="flex items-center justify-between gap-2">
+                    <span class="text-sm font-extrabold text-white">${card.directionLabel}</span>
+                    <span class="text-base font-mono font-extrabold">${card.directionArrow}</span>
+                  </div>
+                  <div class="text-xs font-mono font-semibold mt-1 text-gray-100">${card.targetBand}</div>
+                  <div class="text-[11px] opacity-85 mt-0.5">${card.expectedReturn}</div>
+                </div>
+
+                <!-- 신뢰도 게이지 -->
+                <div class="mb-3">
+                  <div class="flex justify-between text-[11px] text-gray-400 mb-1">
+                    <span>AI 방향성 시나리오 확신도</span>
+                    <span class="font-mono font-semibold text-gray-200">${card.confidence}%</span>
+                  </div>
+                  <div class="w-full h-1.5 bg-gray-800 rounded-full overflow-hidden">
+                    <div class="h-full ${style.bar} rounded-full transition-all duration-500" style="width: ${card.confidence}%"></div>
+                  </div>
+                </div>
+
+                <ul class="space-y-1.5 text-xs text-gray-300 mb-3">
+                  ${card.catalysts
+                    .map(
+                      (c) => `
+                    <li class="flex items-start gap-1.5 leading-relaxed">
+                      <span class="text-cyan-400 mt-0.5">•</span>
+                      <span>${c}</span>
+                    </li>
+                  `
+                    )
+                    .join('')}
+                </ul>
+              </div>
+
+              <div class="pt-2.5 border-t border-gray-800/80 text-xs">
+                <span class="text-gray-400 font-semibold">대응 전략: </span>
+                <span class="text-gray-200">${card.strategy}</span>
+              </div>
+            </div>
+          `;
+        })
+        .join('');
+    }
+
+    function renderHotStocksTable() {
+      const tbody = document.getElementById('watchlist-tbody');
+      // 핫한 종목 우선 정렬 후 등급 필터 적용
+      const sorted = [...stocksData].sort((a, b) => {
+        if (a.isHot !== b.isHot) return a.isHot ? -1 : 1;
+        return a.hotRank - b.hotRank;
+      });
+
+      const filtered = sorted.filter((stock) => {
+        const comp = calculateCompositeScore(stock);
+        const meta = getJudgmentMeta(comp);
+        if (currentFilter === 'ALL') return true;
+        return meta.code === currentFilter;
+      });
+
+      document.getElementById('watchlist-count').textContent = `${filtered.length}종목`;
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" class="py-10 text-center text-sm text-gray-400">
+              해당 등급 조건에 부합하는 종목이 없습니다. 다른 필터 탭을 선택해 주세요.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = filtered
+        .map((stock) => {
+          const compScore = calculateCompositeScore(stock);
+          const meta = getJudgmentMeta(compScore);
+          const isSelected = stock.ticker === selectedTicker;
+          const isUp = stock.changePct >= 0;
+
+          return `
+            <tr
+              onclick="selectTicker('${stock.ticker}')"
+              class="cursor-pointer transition ${
+                isSelected ? 'bg-blue-600/12 hover:bg-blue-600/18' : 'hover:bg-gray-800/50'
+              }"
+            >
+              <td class="py-3.5 px-4">
+                <div class="flex items-center gap-2.5">
+                  <div class="w-1.5 h-10 rounded-full ${isSelected ? 'bg-blue-500' : 'bg-transparent'}"></div>
+                  <div>
+                    <div class="flex flex-wrap items-center gap-1.5">
+                      <span class="font-mono font-bold text-white">${stock.ticker}</span>
+                      ${
+                        stock.isHot
+                          ? '<span class="text-[10px] px-1.5 py-0.2 rounded bg-rose-500/15 text-rose-300 border border-rose-500/30 font-semibold">🔥 HOT</span>'
+                          : ''
+                      }
+                      <span class="text-[10px] px-1.5 py-0.2 rounded bg-gray-800 text-gray-300">${stock.theme}</span>
+                    </div>
+                    <div class="text-xs text-gray-400 mt-0.5 truncate max-w-[160px] sm:max-w-[210px]">
+                      <span class="text-cyan-400/90 font-medium">${stock.hotTag}</span> · ${stock.name}
+                    </div>
+                  </div>
+                </div>
+              </td>
+              <td class="py-3.5 px-3 text-right font-mono">
+                <div class="font-semibold text-gray-100">$${stock.price.toFixed(2)}</div>
+                <div class="text-xs ${isUp ? 'text-emerald-400' : 'text-rose-400'}">
+                  ${isUp ? '+' : ''}${stock.changePct.toFixed(2)}%
+                </div>
+              </td>
+              <td class="py-3.5 px-2.5 text-center font-mono text-xs font-bold ${getScoreTextColor(stock.shortScore)}">
+                ${stock.shortScore}
+              </td>
+              <td class="py-3.5 px-2.5 text-center font-mono text-xs font-bold ${getScoreTextColor(stock.midScore)}">
+                ${stock.midScore}
+              </td>
+              <td class="py-3.5 px-2.5 text-center font-mono text-xs font-bold ${getScoreTextColor(stock.longScore)}">
+                ${stock.longScore}
+              </td>
+              <td class="py-3.5 px-3 text-center">
+                <div class="inline-flex flex-col items-center gap-0.5">
+                  <span class="px-2.5 py-1 rounded-full text-[11px] font-bold border ${meta.badgeClass} whitespace-nowrap">
+                    ${meta.label}
+                  </span>
+                  <span class="text-[10px] font-mono text-gray-400">종합 ${compScore}점</span>
+                </div>
+              </td>
+            </tr>
+          `;
+        })
+        .join('');
+    }
+
+    function renderThemeLeadersView() {
+      const container = document.getElementById('theme-leaders-view');
+      const themeKeys =
+        currentThemeFilter === 'ALL' ? Object.keys(themeCatalog) : [currentThemeFilter];
+
+      let totalVisibleCount = 0;
+
+      container.innerHTML = themeKeys
+        .map((themeKey) => {
+          const metaInfo = themeCatalog[themeKey];
+          const themeStocks = stocksData.filter((s) => s.theme === themeKey);
+          totalVisibleCount += themeStocks.length;
+
+          return `
+            <div class="bg-gray-900/65 border border-gray-800 rounded-2xl p-4 space-y-3">
+              <!-- 테마 섹션 헤더 -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2.5 border-b border-gray-800/80">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="text-base">${metaInfo.icon}</span>
+                    <h3 class="text-sm sm:text-base font-bold text-white">${metaInfo.title}</h3>
+                    <span class="text-[11px] font-mono px-2 py-0.5 rounded-full bg-gray-800 text-gray-300">${themeStocks.length}대장주</span>
+                  </div>
+                  <p class="text-xs text-gray-400 mt-0.5">${metaInfo.momentum}</p>
+                </div>
+                <span class="text-[11px] font-semibold px-2.5 py-1 rounded-lg border ${metaInfo.badgeColor} self-start sm:self-center">
+                  ${metaInfo.horizonSummary}
+                </span>
+              </div>
+
+              <!-- 테마 내 대표 대기업 카드 그리드 -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                ${themeStocks
+                  .map((stock) => {
+                    const compScore = calculateCompositeScore(stock);
+                    const judge = getJudgmentMeta(compScore);
+                    const isSelected = stock.ticker === selectedTicker;
+                    const isUp = stock.changePct >= 0;
+
+                    return `
+                      <div
+                        onclick="selectTicker('${stock.ticker}')"
+                        class="p-3.5 rounded-xl border cursor-pointer transition ${
+                          isSelected
+                            ? 'bg-blue-600/15 border-blue-500/60 shadow-lg shadow-blue-500/10'
+                            : 'bg-[#111827] border-gray-800 hover:border-gray-700'
+                        }"
+                      >
+                        <div class="flex items-start justify-between gap-2">
+                          <div>
+                            <div class="flex items-center gap-1.5">
+                              <span class="font-mono font-extrabold text-sm text-white">${stock.ticker}</span>
+                              ${
+                                stock.isHot
+                                  ? '<span class="text-[9px] px-1.5 py-0.2 rounded bg-rose-500/15 text-rose-300 border border-rose-500/30 font-bold">HOT</span>'
+                                  : ''
+                              }
+                            </div>
+                            <div class="text-xs text-gray-400 truncate max-w-[150px]">${stock.name}</div>
+                          </div>
+                          <div class="text-right font-mono">
+                            <div class="text-sm font-bold text-white">$${stock.price.toFixed(2)}</div>
+                            <div class="text-[11px] ${isUp ? 'text-emerald-400' : 'text-rose-400'}">
+                              ${isUp ? '+' : ''}${stock.changePct.toFixed(2)}%
+                            </div>
+                          </div>
+                        </div>
+
+                        <div class="mt-2.5 pt-2 border-t border-gray-800/80 flex items-center justify-between text-[11px]">
+                          <div class="flex items-center gap-2 font-mono">
+                            <span class="text-gray-400">단 <strong class="${getScoreTextColor(stock.shortScore)}">${stock.shortScore}</strong></span>
+                            <span class="text-gray-400">중 <strong class="${getScoreTextColor(stock.midScore)}">${stock.midScore}</strong></span>
+                            <span class="text-gray-400">장 <strong class="${getScoreTextColor(stock.longScore)}">${stock.longScore}</strong></span>
+                          </div>
+                          <span class="px-2 py-0.5 rounded-full text-[10px] font-bold border ${judge.badgeClass}">
+                            ${judge.label} (${compScore})
+                          </span>
+                        </div>
+                      </div>
+                    `;
+                  })
+                  .join('')}
+              </div>
+            </div>
+          `;
+        })
+        .join('');
+
+      document.getElementById('watchlist-count').textContent = `${totalVisibleCount}종목`;
+    }
+
+    function renderActiveListView() {
+      if (currentViewMode === 'HOT') {
+        renderHotStocksTable();
+      } else {
+        renderThemeLeadersView();
+      }
+    }
+
+    function renderDeepDivePanel() {
+      const panel = document.getElementById('deep-dive-panel');
+      const stock = stocksData.find((s) => s.ticker === selectedTicker) || stocksData[0];
+      const compScore = calculateCompositeScore(stock);
+      const meta = getJudgmentMeta(compScore);
+      const isUp = stock.changePct >= 0;
+
+      const above20 = stock.price >= stock.ma20;
+      const above60 = stock.price >= stock.ma60;
+      const above120 = stock.price >= stock.ma120;
+
+      let rsiStatus = '중립 안정 구간';
+      let rsiColor = 'text-blue-400';
+      if (stock.rsi >= 70) {
+        rsiStatus = '단기 과매수 주의';
+        rsiColor = 'text-rose-400';
+      } else if (stock.rsi <= 35) {
+        rsiStatus = '과매도 반등 구간';
+        rsiColor = 'text-emerald-400';
+      }
+
+      panel.innerHTML = `
+        <!-- 상단 종목 헤더 -->
+        <div class="flex items-start justify-between gap-3 pb-4 border-b border-gray-800">
+          <div>
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="text-xl font-extrabold font-mono text-white">${stock.ticker}</span>
+              <span class="text-xs px-2 py-0.5 rounded-md bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 font-semibold">${stock.theme}</span>
+              <span class="text-xs px-2 py-0.5 rounded-md bg-gray-800 text-gray-300">${stock.sector}</span>
+            </div>
+            <p class="text-xs text-gray-400 mt-1">${stock.name}</p>
+          </div>
+          <div class="text-right shrink-0">
+            <div class="text-xl font-bold font-mono text-white">$${stock.price.toFixed(2)}</div>
+            <div class="text-xs font-mono font-semibold ${isUp ? 'text-emerald-400' : 'text-rose-400'}">
+              ${isUp ? '▲' : '▼'} ${Math.abs(stock.changePct).toFixed(2)}%
+            </div>
+          </div>
+        </div>
+
+        <!-- 종합 AI 판단 배너 -->
+        <div class="p-3.5 rounded-xl bg-gray-900/90 border border-gray-800 flex items-center justify-between gap-3">
+          <div>
+            <div class="text-[11px] text-gray-400 font-medium">AI 가중 종합 투자 판단</div>
+            <div class="text-xs text-gray-200 mt-1 leading-relaxed">${stock.oneLiner}</div>
+          </div>
+          <div class="text-right shrink-0">
+            <span class="inline-block px-3 py-1 rounded-full text-xs font-bold border ${meta.badgeClass}">
+              ${meta.label}
+            </span>
+            <div class="text-lg font-extrabold font-mono text-white mt-1">${compScore}<span class="text-xs text-gray-400 font-normal"> / 100</span></div>
+          </div>
+        </div>
+
+        <!-- 기간별 방향성 요약 3칸 스트립 -->
+        <div class="grid grid-cols-3 gap-2 text-center text-xs">
+          <div class="p-2.5 rounded-xl bg-gray-900/75 border border-gray-800">
+            <div class="text-[10px] text-gray-400">단기 방향성</div>
+            <div class="font-bold text-amber-300 mt-0.5">${stock.shortDir || '반등 시도 (↗)'}</div>
+            <div class="font-mono text-[11px] text-gray-300 mt-0.5">${stock.shortScore}점</div>
+          </div>
+          <div class="p-2.5 rounded-xl bg-gray-900/75 border border-gray-800">
+            <div class="text-[10px] text-gray-400">중기 방향성</div>
+            <div class="font-bold text-emerald-300 mt-0.5">${stock.midDir || '우상향 (▲)'}</div>
+            <div class="font-mono text-[11px] text-gray-300 mt-0.5">${stock.midScore}점</div>
+          </div>
+          <div class="p-2.5 rounded-xl bg-gray-900/75 border border-gray-800">
+            <div class="text-[10px] text-gray-400">장기 방향성</div>
+            <div class="font-bold text-blue-300 mt-0.5">${stock.longDir || '강한 우상향 (▲▲)'}</div>
+            <div class="font-mono text-[11px] text-gray-300 mt-0.5">${stock.longScore}점</div>
+          </div>
+        </div>
+
+        <!-- 인터랙티브 AI 가중치 커스터마이저 -->
+        <div class="p-3.5 rounded-xl bg-blue-950/20 border border-blue-500/20 space-y-2.5">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-blue-300 flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+              </svg>
+              내 투자 성향별 AI 판단 가중치 시뮬레이터
+            </span>
+            <button onclick="resetWeights()" class="text-[11px] text-gray-400 hover:text-white underline cursor-pointer">기본값</button>
+          </div>
+
+          <div class="grid grid-cols-3 gap-2.5 text-xs">
+            <div>
+              <div class="flex justify-between text-[11px] text-gray-300 mb-1">
+                <span>단기 수급</span>
+                <span class="font-mono text-blue-400 font-bold" id="w-short-val">${weights.short}%</span>
+              </div>
+              <input type="range" min="0" max="100" value="${weights.short}" oninput="updateWeight('short', this.value)" class="w-full" />
+            </div>
+            <div>
+              <div class="flex justify-between text-[11px] text-gray-300 mb-1">
+                <span>중기 실적</span>
+                <span class="font-mono text-blue-400 font-bold" id="w-mid-val">${weights.mid}%</span>
+              </div>
+              <input type="range" min="0" max="100" value="${weights.mid}" oninput="updateWeight('mid', this.value)" class="w-full" />
+            </div>
+            <div>
+              <div class="flex justify-between text-[11px] text-gray-300 mb-1">
+                <span>장기 해자</span>
+                <span class="font-mono text-blue-400 font-bold" id="w-long-val">${weights.long}%</span>
+              </div>
+              <input type="range" min="0" max="100" value="${weights.long}" oninput="updateWeight('long', this.value)" class="w-full" />
+            </div>
+          </div>
+        </div>
+
+        <!-- 핵심 기술적 & 펀더멘털 지표 그리드 -->
+        <div class="grid grid-cols-2 gap-3 text-xs">
+          <!-- 기술적 추세 & RSI -->
+          <div class="p-3 rounded-xl bg-gray-900/70 border border-gray-800 space-y-2">
+            <div class="font-semibold text-gray-300 flex items-center justify-between">
+              <span>기술적 지표 (추세/RSI)</span>
+              <span class="font-mono ${rsiColor}">RSI ${stock.rsi}</span>
+            </div>
+            <div class="w-full h-1.5 bg-gray-800 rounded-full overflow-hidden">
+              <div class="h-full bg-gradient-to-r from-emerald-500 via-blue-500 to-rose-500 rounded-full" style="width: ${Math.min(100, Math.max(0, stock.rsi))}%"></div>
+            </div>
+            <div class="text-[11px] text-gray-400 flex justify-between">
+              <span>상태: <strong class="${rsiColor}">${rsiStatus}</strong></span>
+            </div>
+            <div class="pt-1.5 border-t border-gray-800/80 grid grid-cols-3 gap-1 text-center font-mono text-[11px]">
+              <div class="p-1 rounded bg-black/30">
+                <div class="text-gray-500">20일선</div>
+                <div class="${above20 ? 'text-emerald-400' : 'text-rose-400'}">$${stock.ma20}</div>
+              </div>
+              <div class="p-1 rounded bg-black/30">
+                <div class="text-gray-500">60일선</div>
+                <div class="${above60 ? 'text-emerald-400' : 'text-rose-400'}">$${stock.ma60}</div>
+              </div>
+              <div class="p-1 rounded bg-black/30">
+                <div class="text-gray-500">120일선</div>
+                <div class="${above120 ? 'text-emerald-400' : 'text-rose-400'}">$${stock.ma120}</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 펀더멘털 밸류에이션 -->
+          <div class="p-3 rounded-xl bg-gray-900/70 border border-gray-800 flex flex-col justify-between">
+            <div class="font-semibold text-gray-300">핵심 펀더멘털 요약</div>
+            <div class="space-y-1.5 mt-2">
+              <div class="flex justify-between items-center">
+                <span class="text-gray-400">Forward PER</span>
+                <span class="font-mono font-bold text-gray-100">${stock.forwardPE}x</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-gray-400">매출 성장률(YoY)</span>
+                <span class="font-mono font-bold text-emerald-400">+${stock.revGrowth}%</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-gray-400">영업이익률(OPM)</span>
+                <span class="font-mono font-bold text-blue-400">${stock.opMargin}%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 기간별 AI 판단 근거 -->
+        <div class="space-y-2 text-xs">
+          <div class="font-bold text-gray-200">기간별 AI 세부 판단 근거</div>
+          <div class="p-2.5 rounded-xl bg-gray-900/60 border border-gray-800/80">
+            <span class="font-bold text-amber-400">[단기 · ${stock.shortScore}점]</span>
+            <span class="text-gray-300 ml-1">${stock.shortNote}</span>
+          </div>
+          <div class="p-2.5 rounded-xl bg-gray-900/60 border border-gray-800/80">
+            <span class="font-bold text-emerald-400">[중기 · ${stock.midScore}점]</span>
+            <span class="text-gray-300 ml-1">${stock.midNote}</span>
+          </div>
+          <div class="p-2.5 rounded-xl bg-gray-900/60 border border-gray-800/80">
+            <span class="font-bold text-blue-400">[장기 · ${stock.longScore}점]</span>
+            <span class="text-gray-300 ml-1">${stock.longNote}</span>
+          </div>
+        </div>
+
+        <!-- 최신 뉴스 감성 피드 -->
+        <div class="space-y-2 text-xs">
+          <div class="font-bold text-gray-200">최신 핵심 뉴스 & AI 감성 분류</div>
+          <div class="space-y-1.5">
+            ${stock.news
+              .map((item) => {
+                const tagClass =
+                  item.sentiment === '긍정'
+                    ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
+                    : item.sentiment === '부정'
+                    ? 'bg-rose-500/15 text-rose-400 border-rose-500/30'
+                    : 'bg-gray-700/40 text-gray-300 border-gray-600/40';
+                return `
+                  <div class="flex items-start gap-2 p-2 rounded-lg bg-gray-900/50 border border-gray-800/60">
+                    <span class="px-1.5 py-0.5 rounded text-[10px] font-bold border shrink-0 ${tagClass}">${item.sentiment}</span>
+                    <span class="text-gray-300 leading-snug">${item.title}</span>
+                  </div>
+                `;
+              })
+              .join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    // ==========================================
+    // 4. 사용자 인터랙션 핸들러
+    // ==========================================
+    function switchViewMode(mode) {
+      currentViewMode = mode;
+
+      // 버튼 스타일 전환
+      document.querySelectorAll('.view-mode-btn').forEach((btn) => {
+        if (btn.dataset.mode === mode) {
+          btn.classList.add('bg-blue-600', 'text-white', 'font-bold', 'shadow');
+          btn.classList.remove('text-gray-400', 'font-semibold');
+        } else {
+          btn.classList.remove('bg-blue-600', 'text-white', 'font-bold', 'shadow');
+          btn.classList.add('text-gray-400', 'font-semibold');
+        }
+      });
+
+      const hotFilterBar = document.getElementById('hot-filter-bar');
+      const themeFilterBar = document.getElementById('theme-filter-bar');
+      const hotView = document.getElementById('hot-stocks-view');
+      const themeView = document.getElementById('theme-leaders-view');
+
+      if (mode === 'HOT') {
+        hotFilterBar.classList.remove('hidden');
+        themeFilterBar.classList.add('hidden');
+        hotView.classList.remove('hidden');
+        themeView.classList.add('hidden');
+      } else {
+        hotFilterBar.classList.add('hidden');
+        themeFilterBar.classList.remove('hidden');
+        hotView.classList.add('hidden');
+        themeView.classList.remove('hidden');
+      }
+
+      renderActiveListView();
+    }
+
+    function selectThemeFilter(theme) {
+      currentThemeFilter = theme;
+      document.querySelectorAll('.theme-pill').forEach((btn) => {
+        if (btn.dataset.theme === theme) {
+          btn.classList.add('bg-cyan-600/25', 'text-cyan-300', 'border-cyan-500/40', 'font-semibold');
+          btn.classList.remove('bg-gray-900', 'text-gray-400', 'border-gray-800', 'font-medium');
+        } else {
+          btn.classList.remove('bg-cyan-600/25', 'text-cyan-300', 'border-cyan-500/40', 'font-semibold');
+          btn.classList.add('bg-gray-900', 'text-gray-400', 'border-gray-800', 'font-medium');
+        }
+      });
+      renderThemeLeadersView();
+    }
+
+    function selectTicker(ticker) {
+      selectedTicker = ticker;
+      renderActiveListView();
+      renderDeepDivePanel();
+    }
+
+    function updateWeight(type, value) {
+      weights[type] = parseInt(value, 10);
+      renderActiveListView();
+      renderDeepDivePanel();
+    }
+
+    function resetWeights() {
+      weights = { short: 25, mid: 35, long: 40 };
+      renderActiveListView();
+      renderDeepDivePanel();
+      showToast('가중치가 기본값(단기 25% / 중기 35% / 장기 40%)으로 초기화되었습니다.');
+    }
+
+    // 필터 탭 이벤트 바인딩
+    document.querySelectorAll('.filter-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.filter-btn').forEach((b) => {
+          b.classList.remove('bg-gray-800', 'text-white', 'font-semibold');
+          b.classList.add('text-gray-400', 'font-medium');
+        });
+        btn.classList.add('bg-gray-800', 'text-white', 'font-semibold');
+        btn.classList.remove('text-gray-400', 'font-medium');
+        currentFilter = btn.dataset.filter;
+        renderHotStocksTable();
+      });
+    });
+
+    // 새 티커 추가 핸들러 (테마 지정 포함)
+    document.getElementById('add-ticker-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const input = document.getElementById('ticker-input');
+      const themeSelect = document.getElementById('ticker-theme-select');
+      const rawTicker = input.value.trim().toUpperCase();
+      const chosenTheme = themeSelect.value;
+
+      if (!rawTicker) return;
+
+      if (stocksData.some((s) => s.ticker === rawTicker)) {
+        selectTicker(rawTicker);
+        input.value = '';
+        showToast(`${rawTicker} 종목은 이미 분석 리스트에 포함되어 있어 상세 패널로 이동했습니다.`);
+        return;
+      }
+
+      const basePrice = Number((90 + Math.random() * 260).toFixed(2));
+      const changePct = Number(((Math.random() - 0.35) * 4.5).toFixed(2));
+      const shortScore = Math.floor(68 + Math.random() * 22);
+      const midScore = Math.floor(74 + Math.random() * 20);
+      const longScore = Math.floor(76 + Math.random() * 19);
+      const rsi = Number((46 + Math.random() * 22).toFixed(1));
+
+      const newStock = {
+        ticker: rawTicker,
+        name: `${rawTicker} Corp.`,
+        theme: chosenTheme,
+        sector: `${chosenTheme} · US Equity`,
+        isHot: true,
+        hotTag: '사용자 추가 관심주',
+        hotRank: 0,
+        price: basePrice,
+        changePct: changePct,
+        shortScore,
+        midScore,
+        longScore,
+        shortDir: '반등 시도 (↗)',
+        midDir: '우상향 (▲)',
+        longDir: '강한 우상향 (▲▲)',
+        ma20: Number((basePrice * 0.97).toFixed(2)),
+        ma60: Number((basePrice * 0.93).toFixed(2)),
+        ma120: Number((basePrice * 0.89).toFixed(2)),
+        rsi,
+        forwardPE: Number((22 + Math.random() * 20).toFixed(1)),
+        revGrowth: Number((11 + Math.random() * 20).toFixed(1)),
+        opMargin: Number((16 + Math.random() * 26).toFixed(1)),
+        oneLiner: `[${chosenTheme}] 테마로 편입된 ${rawTicker}의 최신 수급과 실적 컨센서스 기반 AI 분석 결과입니다.`,
+        shortNote: `현재 RSI ${rsi} 수준으로 단기 이동평균선 지지 여부를 확인하며 분할 대응 유효.`,
+        midNote: `향후 분기 영업이익 추정치 및 [${chosenTheme}] 섹터 모멘텀 양호한 흐름 유지.`,
+        longNote: `핵심 사업 영역 내 경쟁 우위와 잉여현금흐름 개선 추세를 장기 모니터링 권장.`,
+        news: [
+          { title: `${rawTicker}, [${chosenTheme}] 핵심 프로젝트 수주 및 차세대 제품 로드맵 발표`, sentiment: '긍정' },
+          { title: `월가 주요 애널리스트, ${rawTicker} 중장기 실적 전망치 유지`, sentiment: '중립' }
+        ]
+      };
+
+      stocksData.unshift(newStock);
+      selectedTicker = rawTicker;
+      input.value = '';
+      renderActiveListView();
+      renderDeepDivePanel();
+      showToast(`신규 종목 [${rawTicker}]가 '${chosenTheme}' 테마에 추가되었습니다.`);
+    });
+
+    // 실시간 AI 재분석 시뮬레이션
+    function runReanalysis() {
+      const btn = document.getElementById('reanalyze-btn');
+      const icon = document.getElementById('reanalyze-icon');
+      const text = document.getElementById('reanalyze-text');
+
+      btn.disabled = true;
+      btn.classList.add('opacity-80');
+      icon.classList.add('animate-spin');
+      text.textContent = '선물·시세 AI 분석중...';
+
+      setTimeout(() => {
+        stocksData = stocksData.map((s) => {
+          const deltaPct = Number(((Math.random() - 0.45) * 0.7).toFixed(2));
+          const updatedPrice = Number((s.price * (1 + deltaPct / 100)).toFixed(2));
+          const updatedChange = Number((s.changePct + deltaPct).toFixed(2));
+          const clampedShort = Math.min(98, Math.max(48, s.shortScore + (Math.random() > 0.45 ? 1 : -1)));
+          return {
+            ...s,
+            price: updatedPrice,
+            changePct: updatedChange,
+            shortScore: clampedShort
+          };
+        });
+
+        // 선물 지수 미세 갱신
+        const nqDelta = (2.81 + (Math.random() - 0.45) * 0.25).toFixed(2);
+        const esDelta = (1.96 + (Math.random() - 0.45) * 0.2).toFixed(2);
+        indexFuturesData[1].change = `+${esDelta}%`;
+        indexFuturesData[3].change = `+${nqDelta}%`;
+        macroIndicators[0].change = `NQ +${nqDelta}%`;
+
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        document.getElementById('last-updated-time').textContent = `최근 업데이트: ${timeStr}`;
+
+        renderIndexFuturesAndMacro();
+        renderActiveListView();
+        renderDeepDivePanel();
+
+        btn.disabled = false;
+        btn.classList.remove('opacity-80');
+        icon.classList.remove('animate-spin');
+        text.textContent = '실시간 AI 재분석 실행';
+
+        showToast('S&P 500·나스닥 선물 호가 및 테마별 AI 스코어가 갱신되었습니다.');
+      }, 700);
+    }
+
+    // 개발자 가이드 토글 및 복사
+    function toggleDevGuide() {
+      const content = document.getElementById('dev-guide-content');
+      const chevron = document.getElementById('dev-guide-chevron');
+      const isHidden = content.classList.contains('hidden');
+      if (isHidden) {
+        content.classList.remove('hidden');
+        chevron.textContent = '코드 접기 ▲';
+      } else {
+        content.classList.add('hidden');
+        chevron.textContent = '코드 펼쳐보기 ▼';
+      }
+    }
+
+    function copyBackendCode() {
+      const codeText = document.getElementById('backend-code-block').innerText;
+      const textarea = document.createElement('textarea');
+      textarea.value = codeText;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+      showToast('FastAPI + Gemini 백엔드 파이썬 코드가 클립보드에 복사되었습니다.');
+    }
+
+    // 커스텀 토스트 메시지
+    function showToast(message) {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className =
+        'pointer-events-auto bg-gray-900/95 border border-blue-500/40 text-gray-100 text-xs sm:text-sm px-4 py-3 rounded-xl shadow-2xl flex items-center gap-2.5 transition-all duration-300 translate-y-2 opacity-0';
+      toast.innerHTML = `
+        <span class="w-2 h-2 rounded-full bg-cyan-400 shrink-0"></span>
+        <span>${message}</span>
+      `;
+      container.appendChild(toast);
+
+      requestAnimationFrame(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      });
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+      }, 3200);
+    }
+
+    // 초기 렌더링 실행
+    window.addEventListener('DOMContentLoaded', () => {
+      renderIndexFuturesAndMacro();
+      renderHorizonCards();
+      renderActiveListView();
+      renderDeepDivePanel();
+    });
+  </script>
+</body>
+</html>
