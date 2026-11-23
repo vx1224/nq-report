@@ -1321,8 +1321,15 @@ def analyze_market(tickers: str = "QQQ,NVDA,AVGO,AMD,TSM,MSFT,GOOGL,AMZN,META,AA
         `;
         return;
       }
+const HOT_PAGE_SIZE = 8;
+window.hotCurrentPage = window.hotCurrentPage || 1;
 
-      tbody.innerHTML = filtered
+const totalHotPages = Math.max(1, Math.ceil(filtered.length / HOT_PAGE_SIZE));
+if (window.hotCurrentPage > totalHotPages) window.hotCurrentPage = totalHotPages;
+
+const hotStartIdx = (window.hotCurrentPage - 1) * HOT_PAGE_SIZE;
+const pageStocks = filtered.slice(hotStartIdx, hotStartIdx + HOT_PAGE_SIZE);
+      tbody.innerHTML = pageStocks
         .map((stock) => {
           const compScore = calculateCompositeScore(stock);
           const meta = getJudgmentMeta(compScore);
@@ -1391,7 +1398,32 @@ const preTag = stock.isPremarket ? ' (PRE)' : '';
         })
         .join('');
     }
+let pagerEl = document.getElementById('hot-stocks-pagination');
+if (!pagerEl && tbody && tbody.closest('table')) {
+  pagerEl = document.createElement('div');
+  pagerEl.id = 'hot-stocks-pagination';
+  pagerEl.className = 'flex items-center justify-center gap-1.5 mt-3 pt-2 border-t border-gray-800';
+  tbody.closest('table').insertAdjacentElement('afterend', pagerEl);
+}
 
+if (pagerEl) {
+  let buttonsHtml = '';
+  for (let p = 1; p <= totalHotPages; p++) {
+    const active = p === window.hotCurrentPage;
+    buttonsHtml += `
+      <button type="button"
+        onclick="window.hotCurrentPage=${p}; renderHotStocksTable();"
+        class="px-2.5 py-1 rounded-lg text-xs font-mono font-bold transition cursor-pointer ${
+          active
+            ? 'bg-blue-600 text-white border border-blue-500'
+            : 'bg-gray-900 text-gray-300 border border-gray-800 hover:bg-gray-800'
+        }">
+        ${p}
+      </button>
+    `;
+  }
+  pagerEl.innerHTML = buttonsHtml;
+}
     function renderThemeLeadersView() {
       const container = document.getElementById('theme-leaders-view');
       const themeKeys =
