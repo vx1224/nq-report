@@ -1954,7 +1954,38 @@ def analyze_market(tickers: str = "QQQ,NVDA,AVGO,AMD,TSM,MSFT,GOOGL,AMZN,META,AA
     if (validStocks.length === 0) {
       return;
     }
+const stockMap = new Map(
+      validStocks.map((s) => [String(s.ticker || '').toUpperCase(), s])
+    );
 
+    let updatedCount = 0;
+    if (typeof stocksData !== 'undefined' && Array.isArray(stocksData)) {
+      stocksData.forEach((item) => {
+        const key = String(item.ticker || '').toUpperCase();
+        const latest = stockMap.get(key);
+        if (!latest) return;
+
+        if (typeof latest.price === 'number' && !Number.isNaN(latest.price)) {
+          item.price = latest.price;
+          updatedCount += 1;
+        }
+        const pct = latest.changePct ?? latest.change_pct ?? latest.changePercent;
+        if (typeof pct === 'number' && !Number.isNaN(pct)) {
+          item.changePct = pct;
+        }
+        if (typeof latest.rsi === 'number' && !Number.isNaN(latest.rsi)) {
+          item.rsi = latest.rsi;
+        }
+      });
+    }
+
+    if (updatedCount > 0) {
+      if (typeof renderIndexFuturesAndMacro === 'function') renderIndexFuturesAndMacro();
+      if (typeof renderHorizonCards === 'function') renderHorizonCards();
+      if (typeof renderActiveListView === 'function') renderActiveListView();
+      if (typeof renderDeepDivePanel === 'function') renderDeepDivePanel();
+      if (typeof renderHotStocksTable === 'function') renderHotStocksTable();
+    }
     console.log('최신 market_data.json 불러오기 성공:', data.updated_at_utc, validStocks);
   } catch (err) {
     console.warn('최신 JSON을 불러오지 못해 기존 화면을 유지합니다.', err);
