@@ -1327,7 +1327,7 @@ def analyze_market(tickers: str = "QQQ,NVDA,AVGO,AMD,TSM,MSFT,GOOGL,AMZN,META,AA
           const meta = getJudgmentMeta(compScore);
           const isSelected = stock.ticker === selectedTicker;
           const isUp = stock.changePct >= 0;
-
+const preTag = stock.isPremarket ? ' (PRE)' : '';
           return `
             <tr
               onclick="selectTicker('${stock.ticker}')"
@@ -1355,9 +1355,9 @@ def analyze_market(tickers: str = "QQQ,NVDA,AVGO,AMD,TSM,MSFT,GOOGL,AMZN,META,AA
                 </div>
               </td>
               <td class="py-3.5 px-3 text-right font-mono">
-                <div class="font-semibold text-gray-100">$${stock.price.toFixed(2)}</div>
+                <div class="font-semibold text-gray-100">$${stock.price.toFixed(2)}${preTag}</div>
                 <div class="text-xs ${isUp ? 'text-emerald-400' : 'text-rose-400'}">
-                  ${isUp ? '+' : ''}${stock.changePct.toFixed(2)}%
+                  ${isUp ? '+' : ''}${stock.changePct.toFixed(2)}%${preTag}
                 </div>
               </td>
               <td class="py-3.5 px-2.5 text-center font-mono text-xs font-bold ${getScoreTextColor(stock.shortScore)}">
@@ -2037,6 +2037,7 @@ if (Number.isFinite(nextPrice) && nextPrice > 0) {
 if (Number.isFinite(nextChange)) {
   item.changePct = nextChange;
 }
+        item.isPremarket = String(latest.session || latest.market_session || '').toLowerCase().includes('pre');
         if (typeof latest.rsi14 === 'number' && !Number.isNaN(latest.rsi14)) {
           item.rsi = latest.rsi14;
         }
@@ -2069,6 +2070,7 @@ if (Number.isFinite(nextChange)) {
           hotRank: typeof s.hotRank === 'number' ? s.hotRank : 99,
           price: pickPrice(s),
           changePct: pickChange(s) ?? (s.changePct ?? 0),
+          isPremarket: String(s.session || s.market_session || '').toLowerCase().includes('pre'),
           shortScore: s.shortScore ?? 70,
           midScore: s.midScore ?? 75,
           longScore: s.longScore ?? 75,
