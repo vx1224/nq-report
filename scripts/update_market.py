@@ -122,7 +122,7 @@ def fetch_quote(symbol: str, session: str = "regular", include_premarket: bool =
         }
 
         if include_premarket and session == "premarket":
-            pre_price, pre_change_pct = get_premarket_price(ticker, prev_price)
+            pre_price, pre_change_pct = get_premarket_price(ticker, latest_price)
             if pre_price is not None:
                 result["premarket_price"] = pre_price
                 result["price"] = pre_price
