@@ -1697,6 +1697,71 @@ const preTag = stock.isPremarket ? ' (PRE)' : '';
               .join('')}
           </div>
         </div>
+        <!-- 기간별 디테일 분석 (단기 / 중기 / 장기) -->
+<div class="p-3.5 rounded-xl bg-gray-900/75 border border-gray-800 space-y-2.5">
+  <div class="flex items-center justify-between">
+    <span class="text-xs font-bold text-white">기간별 디테일 분석</span>
+    <span class="text-[11px] text-gray-400">수급·실적·구조 관점 요약</span>
+  </div>
+  <div class="space-y-2 text-xs">
+    <div class="p-2.5 rounded-lg bg-gray-950/70 border border-gray-800/80">
+      <div class="flex items-center justify-between mb-1">
+        <span class="font-semibold text-amber-300">단기 (${stock.shortDir || '반등 시도'})</span>
+        <span class="font-mono text-[11px] text-gray-400">${stock.shortScore}점 · RSI ${stock.rsi ?? '-'}</span>
+      </div>
+      <p class="text-gray-300 leading-relaxed">
+        현재가(${stock.price?.toFixed(2) ?? '-'})는 20일선 ${above20 ? '위' : '아래'} 구간이며, ${stock.theme} 관련 뉴스·수급 변동성과 단기 모멘텀 반응 여부를 함께 체크해야 할 구간입니다.
+      </p>
+    </div>
+    <div class="p-2.5 rounded-lg bg-gray-950/70 border border-gray-800/80">
+      <div class="flex items-center justify-between mb-1">
+        <span class="font-semibold text-emerald-300">중기 (${stock.midDir || '우상향'})</span>
+        <span class="font-mono text-[11px] text-gray-400">${stock.midScore}점</span>
+      </div>
+      <p class="text-gray-300 leading-relaxed">
+        60일선 ${above60 ? '상회 흐름' : '회복 테스트 구간'} 속에서 ${stock.sector} 업황의 분기 실적·가이던스 흐름과 마진 유지력이 중기 추세를 결정하는 핵심 포인트입니다.
+      </p>
+    </div>
+    <div class="p-2.5 rounded-lg bg-gray-950/70 border border-gray-800/80">
+      <div class="flex items-center justify-between mb-1">
+        <span class="font-semibold text-blue-300">장기 (${stock.longDir || '강한 우상향'})</span>
+        <span class="font-mono text-[11px] text-gray-400">${stock.longScore}점</span>
+      </div>
+      <p class="text-gray-300 leading-relaxed">
+        120일선 ${above120 ? '위 장기 추세 유지' : '장기 지지선 확인 중'}이며, ${stock.oneLiner || '핵심 경쟁력'}을 바탕으로 한 구조적 성장성과 밸류에이션 부담을 함께 봐야 합니다.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- 간단 재무제표 요약 -->
+<div class="p-3.5 rounded-xl bg-gray-900/75 border border-gray-800 space-y-2.5">
+  <div class="flex items-center justify-between">
+    <span class="text-xs font-bold text-white">간단 재무제표 요약</span>
+    <span class="text-[11px] text-gray-400">${stock.sector} 기준 핵심 지표</span>
+  </div>
+  <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+    <div class="p-2.5 rounded-lg bg-gray-950/70 border border-gray-800/80">
+      <div class="text-[10px] text-gray-400">매출 성장성</div>
+      <div class="font-mono font-bold text-cyan-300 mt-0.5">${stock.revGrowth || '업데이트 예정'}</div>
+    </div>
+    <div class="p-2.5 rounded-lg bg-gray-950/70 border border-gray-800/80">
+      <div class="text-[10px] text-gray-400">영업이익률</div>
+      <div class="font-mono font-bold text-emerald-300 mt-0.5">${stock.opMargin || '업데이트 예정'}</div>
+    </div>
+    <div class="p-2.5 rounded-lg bg-gray-950/70 border border-gray-800/80">
+      <div class="text-[10px] text-gray-400">부채비율</div>
+      <div class="font-mono font-bold text-gray-200 mt-0.5">${stock.debtRatio || '업데이트 예정'}</div>
+    </div>
+    <div class="p-2.5 rounded-lg bg-gray-950/70 border border-gray-800/80">
+      <div class="text-[10px] text-gray-400">밸류에이션(P/E)</div>
+      <div class="font-mono font-bold text-amber-300 mt-0.5">${stock.peRatio || '업데이트 예정'}</div>
+    </div>
+  </div>
+  <p class="text-[11px] text-gray-400 leading-relaxed">
+    ※ 실제 분기·연간 재무 수치(매출액, 영업이익, FCF 등)는 종목 데이터에 값을 채워 넣으면 자동으로 반영됩니다.
+  </p>
+</div>
       `;
       renderTradingViewChart(stock.ticker);
     }
