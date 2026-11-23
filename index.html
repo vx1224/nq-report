@@ -1865,9 +1865,15 @@ def analyze_market(tickers: str = "QQQ,NVDA,AVGO,AMD,TSM,MSFT,GOOGL,AMZN,META,AA
         indexFuturesData[3].change = `+${nqDelta}%`;
         macroIndicators[0].change = `NQ +${nqDelta}%`;
 
-        const now = new Date();
-        const timeStr = now.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-        document.getElementById('last-updated-time').textContent = `최근 업데이트: ${timeStr}`;
+        const baseDate = window.latestMarketUpdatedAtUtc
+  ? new Date(window.latestMarketUpdatedAtUtc.replace(' ', 'T').replace(' UTC', 'Z'))
+  : new Date();
+const dualTimeStr = formatMarketUpdatedTime(
+  Number.isNaN(baseDate.getTime())
+    ? new Date().toISOString().replace('T', ' ').replace(/\.\d+Z$/, ' UTC')
+    : baseDate.toISOString().replace('T', ' ').replace(/\.\d+Z$/, ' UTC')
+);
+document.getElementById('last-updated-time').textContent = `최근 업데이트: ${dualTimeStr}`;
 
         renderIndexFuturesAndMacro();
         renderActiveListView();
@@ -1977,6 +1983,7 @@ def analyze_market(tickers: str = "QQQ,NVDA,AVGO,AMD,TSM,MSFT,GOOGL,AMZN,META,AA
     if (!res.ok) return;
 
     const data = await res.json();
+    window.latestMarketUpdatedAtUtc = data.updated_at_utc;
     const updatedTimeText = formatMarketUpdatedTime(data.updated_at_utc);
     const updatedTimeEl = document.getElementById('last-updated-time');
     if (updatedTimeEl && updatedTimeText) {
