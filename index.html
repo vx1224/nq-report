@@ -2021,9 +2021,11 @@ function pickChange(s) {
     );
 
     // 2) 기존 stocksData 배열 안의 종목 값 덮어쓰기
+    const hasPremarketSession = validStocks.some((s) => String(s.session || s.market_session || '').toLowerCase().includes('pre'));
     let updatedCount = 0;
     if (typeof stocksData !== 'undefined' && Array.isArray(stocksData)) {
       stocksData.forEach((item) => {
+        item.isPremarket = hasPremarketSession;
         const key = String(item.ticker || item.symbol || '').toUpperCase();
         const latest = stockMap.get(key);
         if (!latest) return;
