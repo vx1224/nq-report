@@ -1349,7 +1349,7 @@ const preTag = stock.isPremarket ? ' (PRE)' : '';
                       <span class="text-[10px] px-1.5 py-0.2 rounded bg-gray-800 text-gray-300">${stock.theme}</span>
                     </div>
                     <div class="text-xs text-gray-400 mt-0.5 truncate max-w-[160px] sm:max-w-[210px]">
-                      <span class="text-cyan-400/90 font-medium">${stock.hotTag}</span> · ${stock.name}
+                      <span class="text-cyan-400/90 font-medium">${stock.hotTag}</span> · ${stock.oneLiner || stock.name}
                     </div>
                   </div>
                 </div>
