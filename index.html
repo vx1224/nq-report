@@ -1980,11 +1980,15 @@ document.getElementById('last-updated-time').textContent = `최근 업데이트:
 
     const data = await res.json();
     window.latestMarketUpdatedAtUtc = data.updated_at_utc;
-    const updatedTimeText = formatMarketUpdatedTime(data.updated_at_utc);
+
+    const updatedTimeText = typeof formatMarketUpdatedTime === 'function'
+      ? formatMarketUpdatedTime(data.updated_at_utc)
+      : '';
     const updatedTimeEl = document.getElementById('last-updated-time');
     if (updatedTimeEl && updatedTimeText) {
       updatedTimeEl.textContent = `최근 업데이트: ${updatedTimeText}`;
     }
+
     if (!data || typeof data !== 'object' || !Array.isArray(data.stocks) || data.stocks.length === 0) {
       return;
     }
@@ -1995,7 +1999,8 @@ document.getElementById('last-updated-time').textContent = `최근 업데이트:
     if (validStocks.length === 0) {
       return;
     }
-// 1) symbol 기준으로 최신 데이터 맵 생성
+
+    // 1) symbol 기준으로 최신 데이터 맵 생성
     const stockMap = new Map(
       validStocks.map((s) => [String(s.symbol || s.ticker || '').toUpperCase(), s])
     );
@@ -2028,8 +2033,7 @@ document.getElementById('last-updated-time').textContent = `최근 업데이트:
           item.ma120 = latest.ma120;
         }
       });
-    }
-      // 👉 여기! (stocksData.forEach 끝난 바로 아래, if (stocksData ...) 닫는 } 안쪽)
+
       const existingTickers = new Set(
         stocksData.map((item) => String(item.ticker || item.symbol || '').toUpperCase())
       );
@@ -2080,6 +2084,7 @@ document.getElementById('last-updated-time').textContent = `최근 업데이트:
       if (typeof renderDeepDivePanel === 'function') renderDeepDivePanel();
       if (typeof renderHotStocksTable === 'function') renderHotStocksTable();
     }
+
     console.log('최신 market_data.json 불러오기 성공:', data.updated_at_utc, validStocks);
   } catch (err) {
     console.warn('최신 JSON을 불러오지 못해 기존 화면을 유지합니다.', err);
