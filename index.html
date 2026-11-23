@@ -1937,5 +1937,29 @@ def analyze_market(tickers: str = "QQQ,NVDA,AVGO,AMD,TSM,MSFT,GOOGL,AMZN,META,AA
       renderDeepDivePanel();
     });
   </script>
+  <script>
+(async function syncMarketData() {
+  try {
+    const res = await fetch('./data/market_data.json', { cache: 'no-store' });
+    if (!res.ok) return;
+
+    const data = await res.json();
+    if (!data || typeof data !== 'object' || !Array.isArray(data.stocks) || data.stocks.length === 0) {
+      return;
+    }
+
+    const validStocks = data.stocks.filter(
+      (item) => item && typeof item.price === 'number' && !Number.isNaN(item.price)
+    );
+    if (validStocks.length === 0) {
+      return;
+    }
+
+    console.log('최신 market_data.json 불러오기 성공:', data.updated_at_utc, validStocks);
+  } catch (err) {
+    console.warn('최신 JSON을 불러오지 못해 기존 화면을 유지합니다.', err);
+  }
+})();
+</script>
 </body>
 </html>
