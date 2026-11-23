@@ -2061,11 +2061,20 @@ if (Number.isFinite(nextChange)) {
       validStocks.forEach((s) => {
         const sym = String(s.symbol || s.ticker || '').toUpperCase();
         if (!sym || existingTickers.has(sym)) return;
-
+const metaMap = {
+      SPCX: { name: 'SpaceX', theme: '우주·항공', oneLiner: '우주 발사체·위성 통신 모멘텀' },
+      INTC: { name: 'Intel Corp.', theme: 'AI 반도체', oneLiner: '파운드리·PC CPU 턴어라운드 주시' },
+      ANT: { name: 'Ant Group', theme: '핀테크·AI', oneLiner: '디지털 결제·AI 서비스 확장 기대' },
+      ORCL: { name: 'Oracle Corp.', theme: '빅테크·클라우드', oneLiner: 'AI 데이터센터·클라우드 수주 확대' },
+      NFLX: { name: 'Netflix Inc.', theme: '미디어·스트리밍', oneLiner: '광고 요금제·구독 수익성 개선' },
+      MU: { name: 'Micron Technology', theme: '메모리 반도체', oneLiner: 'HBM·서버 D램 업황 수혜' },
+      BAC: { name: 'Bank of America', theme: '금융·거시', oneLiner: '금리 환경·대출 마진 및 자산건전성 주시' }
+    };
+    const fallbackMeta = metaMap[sym] || {};
         stocksData.push({
           ticker: sym,
-          name: s.name || sym,
-          theme: s.theme || '기타',
+          name: s.name || fallbackMeta.name || sym,
+          theme: s.theme || fallbackMeta.theme || '기타',
           sector: s.sector || '',
           isHot: Boolean(s.isHot),
           hotTag: s.hotTag || '',
@@ -2086,7 +2095,7 @@ if (Number.isFinite(nextChange)) {
           forwardPE: s.forwardPE ?? '-',
           revGrowth: s.revGrowth ?? '-',
           opMargin: s.opMargin ?? '-',
-          oneLiner: s.oneLiner || `${sym} 최신 시세 반영 종목`,
+          oneLiner: s.oneLiner || fallbackMeta.oneLiner || `${sym} 최신 시세 반영 종목`,
           shortNote: s.shortNote || '',
           midNote: s.midNote || '',
           longNote: s.longNote || '',
