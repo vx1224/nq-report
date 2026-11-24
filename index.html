@@ -200,7 +200,7 @@
     </section>
 
     <!-- 3. Section 2 & 3: 개별 종목 분석 (🔥 지금 핫한 주식 vs 🗂️ 테마별 대표 대기업) & AI 딥다이브 패널 -->
-    <section class="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
+    <section class="grid grid-cols-1 xl:grid-cols-12 gap-6">
   <div class="xl:col-span-7 bg-[#111827] border border-gray-800/90 rounded-2xl p-4 sm:p-6 shadow-xl space-y-5" id="deep-dive-panel">
         <!-- JS로 선택된 종목 상세 렌더링 -->
       </div>
@@ -1321,7 +1321,7 @@ def analyze_market(tickers: str = "QQQ,NVDA,AVGO,AMD,TSM,MSFT,GOOGL,AMZN,META,AA
         `;
         return;
       }
-const HOT_PAGE_SIZE = 8;
+const HOT_PAGE_SIZE = 20;
 window.hotCurrentPage = window.hotCurrentPage || 1;
 
 const totalHotPages = Math.max(1, Math.ceil(filtered.length / HOT_PAGE_SIZE));
