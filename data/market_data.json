@@ -1,5 +1,5 @@
 {
-  "updated_at_utc": "2026-11-24 04:30:05 UTC",
+  "updated_at_utc": "2026-11-24 05:32:17 UTC",
   "session": "closed",
   "indices": {
     "sp500_spot": {
@@ -15,12 +15,12 @@
     "sp500_futures": {
       "symbol": "ES=F",
       "session": "closed",
-      "price": 7269.25,
-      "change_pct": 4.82,
-      "ma20": 7504.19,
-      "ma60": 7658.5,
-      "ma120": 7615.84,
-      "rsi14": 41.0
+      "price": 7274.25,
+      "change_pct": 0.27,
+      "ma20": 7479.25,
+      "ma60": 7651.18,
+      "ma120": 7612.99,
+      "rsi14": 36.87
     },
     "nasdaq_spot": {
       "symbol": "^IXIC",
@@ -35,12 +35,12 @@
     "nasdaq_futures": {
       "symbol": "NQ=F",
       "session": "closed",
-      "price": 26827.25,
-      "change_pct": 6.77,
-      "ma20": 27878.38,
-      "ma60": 29347.48,
-      "ma120": 29402.17,
-      "rsi14": 42.16
+      "price": 26859.0,
+      "change_pct": 0.19,
+      "ma20": 27729.76,
+      "ma60": 29302.92,
+      "ma120": 29371.76,
+      "rsi14": 40.71
     },
     "qqq": {
       "symbol": "QQQ",
