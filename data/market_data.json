@@ -1,134 +1,134 @@
 {
-  "updated_at_utc": "2026-11-25 16:38:21 UTC",
+  "updated_at_utc": "2026-11-25 17:41:59 UTC",
   "session": "regular",
   "indices": {
     "sp500_spot": {
       "symbol": "^GSPC",
       "session": "regular",
-      "price": 6993.99,
-      "change_pct": -2.88,
-      "ma20": 7413.68,
-      "ma60": 7606.44,
-      "ma120": 7577.2,
-      "rsi14": 38.78
+      "price": 7112.15,
+      "change_pct": -1.24,
+      "ma20": 7419.58,
+      "ma60": 7608.41,
+      "ma120": 7578.19,
+      "rsi14": 41.86
     },
     "sp500_futures": {
       "symbol": "ES=F",
       "session": "regular",
-      "price": 7034.0,
-      "change_pct": -2.54,
-      "ma20": 7438.95,
-      "ma60": 7640.09,
-      "ma120": 7609.47,
-      "rsi14": 38.84
+      "price": 7109.5,
+      "change_pct": -1.5,
+      "ma20": 7442.73,
+      "ma60": 7641.34,
+      "ma120": 7610.1,
+      "rsi14": 40.81
     },
     "nasdaq_spot": {
       "symbol": "^IXIC",
       "session": "regular",
-      "price": 22747.93,
-      "change_pct": -4.15,
-      "ma20": 24670.63,
-      "ma60": 26010.69,
-      "ma120": 25988.51,
-      "rsi14": 39.4
+      "price": 23223.44,
+      "change_pct": -2.15,
+      "ma20": 24694.4,
+      "ma60": 26018.62,
+      "ma120": 25992.47,
+      "rsi14": 42.11
     },
     "nasdaq_futures": {
       "symbol": "NQ=F",
       "session": "regular",
-      "price": 25212.5,
-      "change_pct": -4.05,
-      "ma20": 27462.25,
-      "ma60": 29227.99,
-      "ma120": 29335.12,
-      "rsi14": 41.38
+      "price": 25574.25,
+      "change_pct": -2.67,
+      "ma20": 27480.34,
+      "ma60": 29234.02,
+      "ma120": 29338.13,
+      "rsi14": 43.12
     },
     "qqq": {
       "symbol": "QQQ",
       "session": "regular",
-      "price": 609.48,
-      "change_pct": -4.49,
-      "ma20": 665.51,
-      "ma60": 707.36,
-      "ma120": 709.75,
-      "rsi14": 41.6
+      "price": 623.04,
+      "change_pct": -2.36,
+      "ma20": 666.19,
+      "ma60": 707.59,
+      "ma120": 709.86,
+      "rsi14": 44.29
     }
   },
   "stocks": [
     {
       "symbol": "NVDA",
       "session": "regular",
-      "price": 141.73,
-      "change_pct": -8.78,
-      "ma20": 172.1,
-      "ma60": 206.34,
-      "ma120": 207.31,
-      "rsi14": 35.62
+      "price": 144.24,
+      "change_pct": -7.17,
+      "ma20": 172.22,
+      "ma60": 206.38,
+      "ma120": 207.33,
+      "rsi14": 36.28
     },
     {
       "symbol": "MSFT",
       "session": "regular",
-      "price": 479.3,
-      "change_pct": -3.39,
-      "ma20": 515.85,
-      "ma60": 514.75,
-      "ma120": 470.86,
-      "rsi14": 26.34
+      "price": 487.87,
+      "change_pct": -1.66,
+      "ma20": 516.27,
+      "ma60": 514.9,
+      "ma120": 470.93,
+      "rsi14": 28.41
     },
     {
       "symbol": "AAPL",
       "session": "regular",
-      "price": 347.09,
-      "change_pct": -1.97,
-      "ma20": 348.12,
-      "ma60": 339.86,
-      "ma120": 324.75,
-      "rsi14": 52.92
+      "price": 352.55,
+      "change_pct": -0.43,
+      "ma20": 348.39,
+      "ma60": 339.95,
+      "ma120": 324.79,
+      "rsi14": 58.81
     },
     {
       "symbol": "AMZN",
       "session": "regular",
-      "price": 237.7,
-      "change_pct": -5.78,
-      "ma20": 256.85,
-      "ma60": 254.79,
-      "ma120": 252.68,
-      "rsi14": 36.81
+      "price": 243.9,
+      "change_pct": -3.33,
+      "ma20": 257.16,
+      "ma60": 254.89,
+      "ma120": 252.74,
+      "rsi14": 39.69
     },
     {
       "symbol": "META",
       "session": "regular",
-      "price": 578.22,
-      "change_pct": -1.97,
-      "ma20": 613.68,
-      "ma60": 666.2,
-      "ma120": 627.81,
-      "rsi14": 43.58
+      "price": 598.61,
+      "change_pct": 1.49,
+      "ma20": 614.7,
+      "ma60": 666.54,
+      "ma120": 627.98,
+      "rsi14": 48.43
     },
     {
       "symbol": "SPCX",
       "session": "regular",
-      "price": 117.35,
-      "change_pct": -6.72,
-      "ma20": 135.97,
-      "ma60": 146.68,
+      "price": 121.61,
+      "change_pct": -3.34,
+      "ma20": 136.18,
+      "ma60": 146.75,
       "ma120": null,
-      "rsi14": 45.46
+      "rsi14": 48.45
     },
     {
       "symbol": "INTC",
       "session": "regular",
-      "price": 49.45,
-      "change_pct": -9.76,
-      "ma20": 59.11,
-      "ma60": 89.44,
-      "ma120": 97.7,
-      "rsi14": 46.86
+      "price": 51.88,
+      "change_pct": -5.33,
+      "ma20": 59.23,
+      "ma60": 89.48,
+      "ma120": 97.72,
+      "rsi14": 49.56
     },
     {
       "symbol": "ANT",
       "session": "regular",
-      "price": 80.09,
-      "change_pct": -2.22,
+      "price": 83.76,
+      "change_pct": 2.26,
       "ma20": null,
       "ma60": null,
       "ma120": null,
@@ -137,102 +137,102 @@
     {
       "symbol": "ORCL",
       "session": "regular",
-      "price": 99.97,
-      "change_pct": -8.7,
-      "ma20": 118.61,
-      "ma60": 133.37,
-      "ma120": 140.63,
-      "rsi14": 39.19
+      "price": 103.33,
+      "change_pct": -5.63,
+      "ma20": 118.77,
+      "ma60": 133.42,
+      "ma120": 140.66,
+      "rsi14": 41.15
     },
     {
       "symbol": "GOOGL",
       "session": "regular",
-      "price": 264.45,
-      "change_pct": -5.23,
-      "ma20": 282.62,
-      "ma60": 321.64,
-      "ma120": 336.3,
-      "rsi14": 39.94
+      "price": 270.37,
+      "change_pct": -3.11,
+      "ma20": 282.91,
+      "ma60": 321.74,
+      "ma120": 336.35,
+      "rsi14": 42.75
     },
     {
       "symbol": "TSLA",
       "session": "regular",
-      "price": 362.98,
-      "change_pct": -5.64,
-      "ma20": 381.29,
-      "ma60": 374.46,
-      "ma120": 370.17,
-      "rsi14": 55.5
+      "price": 367.39,
+      "change_pct": -4.49,
+      "ma20": 381.51,
+      "ma60": 374.53,
+      "ma120": 370.2,
+      "rsi14": 56.93
     },
     {
       "symbol": "AVGO",
       "session": "regular",
-      "price": 281.65,
-      "change_pct": -6.45,
-      "ma20": 326.03,
-      "ma60": 342.7,
-      "ma120": 363.77,
-      "rsi14": 47.7
+      "price": 287.88,
+      "change_pct": -4.38,
+      "ma20": 326.34,
+      "ma60": 342.81,
+      "ma120": 363.82,
+      "rsi14": 49.13
     },
     {
       "symbol": "PLTR",
       "session": "regular",
-      "price": 154.0,
-      "change_pct": -4.45,
-      "ma20": 165.83,
-      "ma60": 180.61,
-      "ma120": 162.06,
-      "rsi14": 49.31
+      "price": 159.6,
+      "change_pct": -0.98,
+      "ma20": 166.11,
+      "ma60": 180.71,
+      "ma120": 162.1,
+      "rsi14": 53.46
     },
     {
       "symbol": "TSM",
       "session": "regular",
-      "price": 322.92,
-      "change_pct": -7.53,
-      "ma20": 378.53,
-      "ma60": 418.83,
-      "ma120": 420.57,
-      "rsi14": 43.87
+      "price": 332.69,
+      "change_pct": -4.73,
+      "ma20": 379.02,
+      "ma60": 419.0,
+      "ma120": 420.65,
+      "rsi14": 45.69
     },
     {
       "symbol": "GEV",
       "session": "regular",
-      "price": 672.5,
-      "change_pct": -6.68,
-      "ma20": 794.05,
-      "ma60": 890.39,
-      "ma120": 952.86,
-      "rsi14": 37.93
+      "price": 693.22,
+      "change_pct": -3.81,
+      "ma20": 795.09,
+      "ma60": 890.73,
+      "ma120": 953.03,
+      "rsi14": 39.97
     },
     {
       "symbol": "NFLX",
       "session": "regular",
-      "price": 57.22,
-      "change_pct": -2.8,
-      "ma20": 61.57,
-      "ma60": 68.24,
-      "ma120": 71.95,
-      "rsi14": 24.78
+      "price": 58.71,
+      "change_pct": -0.27,
+      "ma20": 61.65,
+      "ma60": 68.26,
+      "ma120": 71.96,
+      "rsi14": 27.23
     },
     {
       "symbol": "MU",
       "session": "regular",
-      "price": 553.07,
-      "change_pct": -12.18,
-      "ma20": 740.39,
-      "ma60": 906.84,
-      "ma120": 932.9,
-      "rsi14": 42.12
+      "price": 573.25,
+      "change_pct": -8.98,
+      "ma20": 741.4,
+      "ma60": 907.18,
+      "ma120": 933.06,
+      "rsi14": 43.46
     },
     {
       "symbol": "BAC",
       "session": "regular",
-      "price": 47.5,
-      "change_pct": -2.18,
-      "ma20": 49.64,
-      "ma60": 53.61,
+      "price": 48.14,
+      "change_pct": -0.86,
+      "ma20": 49.67,
+      "ma60": 53.62,
       "ma120": 56.85,
-      "rsi14": 37.22
+      "rsi14": 40.1
     }
   ]
 }
