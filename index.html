@@ -1319,9 +1319,10 @@ def analyze_market(tickers: str = "QQQ,NVDA,AVGO,AMD,TSM,MSFT,GOOGL,AMZN,META,AA
             </td>
           </tr>
         `;
+        renderHotStocksPager(0);
         return;
       }
-const HOT_PAGE_SIZE = 20;
+const HOT_PAGE_SIZE = 8;
 window.hotCurrentPage = window.hotCurrentPage || 1;
 
 const totalHotPages = Math.max(1, Math.ceil(filtered.length / HOT_PAGE_SIZE));
@@ -1397,52 +1398,47 @@ const preTag = stock.isPremarket ? ' (PRE)' : '';
           `;
         })
         .join('');
+
+      renderHotStocksPager(totalHotPages);
     }
-const tbodyEl =
-  (typeof tbody !== 'undefined' && tbody) ||
-  document.querySelector('#hot-stocks-view tbody') ||
-  document.querySelector('table tbody');
-const hostTable = tbodyEl ? tbodyEl.closest('table') : document.querySelector('table');
 
-let pagerEl = document.getElementById('hot-stocks-pagination');
-if (!pagerEl && hostTable) {
-  pagerEl = document.createElement('div');
-  pagerEl.id = 'hot-stocks-pagination';
-  pagerEl.className = 'flex items-center justify-center gap-1.5 mt-3 pt-2 border-t border-gray-800';
-  hostTable.insertAdjacentElement('afterend', pagerEl);
-}
+    // 핫 종목 표 하단 페이지 번호 (표를 그릴 때마다 다시 그려 현재 페이지를 강조)
+    function renderHotStocksPager(totalPages) {
+      const tbodyEl = document.getElementById('watchlist-tbody');
+      const hostTable = tbodyEl ? tbodyEl.closest('table') : null;
+      if (!hostTable) return;
 
-if (pagerEl) {
-  const safePageSize = typeof HOT_PAGE_SIZE === 'number' && HOT_PAGE_SIZE > 0 ? HOT_PAGE_SIZE : 8;
-  const safeTotalItems =
-    typeof filtered !== 'undefined' && Array.isArray(filtered)
-      ? filtered.length
-      : (typeof stocksData !== 'undefined' && Array.isArray(stocksData) ? stocksData.length : 0);
-  const safeTotalPages =
-    typeof totalHotPages === 'number' && totalHotPages > 0
-      ? totalHotPages
-      : Math.max(1, Math.ceil(safeTotalItems / safePageSize));
+      let pagerEl = document.getElementById('hot-stocks-pagination');
+      if (!pagerEl) {
+        pagerEl = document.createElement('div');
+        pagerEl.id = 'hot-stocks-pagination';
+        pagerEl.className = 'flex items-center justify-center gap-1.5 mt-3 pt-2 border-t border-gray-800';
+        hostTable.insertAdjacentElement('afterend', pagerEl);
+      }
 
-  window.hotCurrentPage = window.hotCurrentPage || 1;
-  if (window.hotCurrentPage > safeTotalPages) window.hotCurrentPage = safeTotalPages;
+      if (!(totalPages >= 1)) {
+        pagerEl.innerHTML = '';
+        return;
+      }
 
-  let buttonsHtml = '';
-  for (let p = 1; p <= safeTotalPages; p++) {
-    const active = p === window.hotCurrentPage;
-    buttonsHtml += `
-      <button type="button"
-        onclick="window.hotCurrentPage=${p}; if (typeof renderHotStocksTable === 'function') renderHotStocksTable();"
-        class="px-2.5 py-1 rounded-lg text-xs font-mono font-bold transition cursor-pointer ${
-          active
-            ? 'bg-blue-600 text-white border border-blue-500'
-            : 'bg-gray-900 text-gray-300 border border-gray-800 hover:bg-gray-800'
-        }">
-        ${p}
-      </button>
-    `;
-  }
-  pagerEl.innerHTML = buttonsHtml;
-}
+      const current = window.hotCurrentPage || 1;
+      let buttonsHtml = '';
+      for (let p = 1; p <= totalPages; p++) {
+        const active = p === current;
+        buttonsHtml += `
+          <button type="button"
+            onclick="window.hotCurrentPage=${p}; if (typeof renderHotStocksTable === 'function') renderHotStocksTable();"
+            class="px-2.5 py-1 rounded-lg text-xs font-mono font-bold transition cursor-pointer ${
+              active
+                ? 'bg-blue-600 text-white border border-blue-500'
+                : 'bg-gray-900 text-gray-300 border border-gray-800 hover:bg-gray-800'
+            }">
+            ${p}
+          </button>
+        `;
+      }
+      pagerEl.innerHTML = buttonsHtml;
+    }
     function renderThemeLeadersView() {
       const container = document.getElementById('theme-leaders-view');
       const themeKeys =
@@ -1985,6 +1981,7 @@ function editStockTheme(ticker) {
         btn.classList.add('bg-gray-800', 'text-white', 'font-semibold');
         btn.classList.remove('text-gray-400', 'font-medium');
         currentFilter = btn.dataset.filter;
+        window.hotCurrentPage = 1;
         renderHotStocksTable();
       });
     });
