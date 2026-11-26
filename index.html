@@ -2079,12 +2079,7 @@ function editStockTheme(ticker) {
           };
         });
 
-        // 선물 지수 미세 갱신
-        const nqDelta = (2.81 + (Math.random() - 0.45) * 0.25).toFixed(2);
-        const esDelta = (1.96 + (Math.random() - 0.45) * 0.2).toFixed(2);
-        indexFuturesData[1].change = `+${esDelta}%`;
-        indexFuturesData[3].change = `+${nqDelta}%`;
-        macroIndicators[0].change = `NQ +${nqDelta}%`;
+        // 지수·매크로는 market_data.json 실데이터를 사용 (아래에서 다시 동기화)
 
         const now = new Date();
 const isoUtc = now.toISOString().replace('T', ' ').replace(/\.\d+Z$/, ' UTC');
@@ -2095,6 +2090,7 @@ document.getElementById('last-updated-time').textContent = `최근 업데이트:
         renderIndexFuturesAndMacro();
         renderActiveListView();
         renderDeepDivePanel();
+        if (typeof syncMarketData === 'function') syncMarketData();
 
         btn.disabled = false;
         btn.classList.remove('opacity-80');
@@ -2209,9 +2205,142 @@ function pickChange(s) {
   const curChg = Number(s.change_pct ?? s.changePct);
   return Number.isFinite(curChg) ? curChg : undefined;
 }   
-(async function syncMarketData() {
+// ==========================================
+// 지수·매크로 지표를 market_data.json(indices)으로 갱신
+// ==========================================
+function idxNum(n, d = 2) {
+  return Number(n).toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d });
+}
+function idxSigned(n, d = 2) {
+  const v = Number(n);
+  return `${v >= 0 ? '+' : '-'}${idxNum(Math.abs(v), d)}`;
+}
+function idxPct(n) {
+  return `${idxSigned(n, 2)}%`;
+}
+function applyIndicesFromData(ind) {
+  const valid = (q) => q && Number.isFinite(Number(q.price)) && Number(q.price) > 0;
+  const prevOf = (price, chg) => (Number.isFinite(chg) ? price / (1 + chg / 100) : price);
+  const card = (id) => indexFuturesData.find((x) => x.id === id);
+  const macro = (id) => macroIndicators.find((x) => x.id === id);
+  let changed = false;
+
+  const spotSub = (q) => {
+    const price = Number(q.price);
+    const chg = Number(q.change_pct);
+    const ma20 = Number(q.ma20);
+    const parts = [];
+    if (Number.isFinite(chg)) parts.push(`전일 대비 ${idxSigned(price - prevOf(price, chg), 2)}pt`);
+    if (Number.isFinite(ma20) && ma20 > 0) parts.push(`20일선 대비 ${idxPct((price / ma20 - 1) * 100)}`);
+    return parts.join(' · ');
+  };
+
+  // 상단 지수 카드 4종 (현물 / 선물)
+  [
+    ['sp500_spot', ind.sp500_spot, null],
+    ['sp500_fut', ind.sp500_futures, ind.sp500_spot],
+    ['ndx_spot', ind.ndx_spot, null],
+    ['ndx_fut', ind.nasdaq_futures, ind.ndx_spot],
+  ].forEach(([id, q, spot]) => {
+    const c = card(id);
+    if (!c || !valid(q)) return;
+    const price = Number(q.price);
+    const chg = Number(q.change_pct);
+    c.value = idxNum(price);
+    if (Number.isFinite(chg)) {
+      c.change = idxPct(chg);
+      c.isPositive = chg >= 0;
+    }
+    if (spot && valid(spot)) {
+      const basis = price - Number(spot.price);
+      c.sub = `현물 대비 ${idxSigned(basis, 2)}pt ${basis >= 0 ? '프리미엄' : '디스카운트'}`;
+    } else {
+      c.sub = spotSub(q);
+    }
+    changed = true;
+  });
+
+  // NDX 카드는 배지에 QQQ 가격을 표시
+  const ndx = card('ndx_spot');
+  if (ndx && valid(ind.ndx_spot) && valid(ind.qqq)) {
+    ndx.change = `QQQ $${idxNum(ind.qqq.price)}`;
+    const nChg = Number(ind.ndx_spot.change_pct);
+    const nPrice = Number(ind.ndx_spot.price);
+    ndx.sub = Number.isFinite(nChg)
+      ? `NDX ${idxPct(nChg)} · 전일 대비 ${idxSigned(nPrice - prevOf(nPrice, nChg), 2)}pt`
+      : '';
+  }
+
+  // 미국채 10년물 (하락 = 성장주에 우호적 = 초록)
+  if (valid(ind.us10y) && macro('us10y')) {
+    const q = ind.us10y;
+    const scale = Number(q.price) > 20 ? 0.1 : 1; // 일부 소스는 금리×10 형태
+    const y = Number(q.price) * scale;
+    const chg = Number(q.change_pct);
+    const m = macro('us10y');
+    m.value = `${idxNum(y, 2)}%`;
+    if (Number.isFinite(chg)) {
+      const d = y - prevOf(y, chg);
+      m.change = `${idxSigned(d, 2)}%p`;
+      m.isPositive = d <= 0;
+    }
+    const ma = Number(q.ma20) * scale;
+    m.sub = Number.isFinite(ma) && ma > 0 ? `20일 평균 ${idxNum(ma, 2)}% 대비 ${y >= ma ? '상회' : '하회'}` : '';
+    changed = true;
+  }
+
+  // VIX
+  if (valid(ind.vix) && macro('vix')) {
+    const v = Number(ind.vix.price);
+    const chg = Number(ind.vix.change_pct);
+    const m = macro('vix');
+    m.value = idxNum(v, 2);
+    if (Number.isFinite(chg)) {
+      m.change = idxPct(chg);
+      m.isPositive = chg <= 0;
+    }
+    m.sub = v < 20 ? '20선 하회 · 변동성 안정권' : '20선 상회 · 변동성 경계 구간';
+    changed = true;
+  }
+
+  // 원/달러 환율
+  if (valid(ind.usdkrw) && macro('usdkrw')) {
+    const p = Number(ind.usdkrw.price);
+    const chg = Number(ind.usdkrw.change_pct);
+    const ma = Number(ind.usdkrw.ma20);
+    const m = macro('usdkrw');
+    m.value = `${idxNum(p, 2)}원`;
+    if (Number.isFinite(chg)) {
+      const d = p - prevOf(p, chg);
+      m.change = `${idxSigned(d, 1)}원`;
+      m.isPositive = d <= 0;
+    }
+    m.sub = ma > 0 ? `20일 평균 ${idxNum(ma, 0)}원 대비 ${p >= ma ? '상회' : '하회'}` : '';
+    changed = true;
+  }
+
+  // 현·선물 괴리율 시그널
+  const nq = ind.nasdaq_futures;
+  const nSpot = valid(ind.ndx_spot) ? ind.ndx_spot : ind.nasdaq_spot;
+  const mb = macro('basis_signal');
+  if (mb && valid(nq) && valid(nSpot)) {
+    const nqChg = Number(nq.change_pct);
+    const spChg = Number(nSpot.change_pct);
+    if (Number.isFinite(nqChg) && Number.isFinite(spChg)) {
+      const diff = nqChg - spChg;
+      mb.value = diff > 0.1 ? '선물 강세 우위' : diff < -0.1 ? '선물 약세 우위' : '현·선물 동조';
+      mb.change = `NQ ${idxPct(nqChg)}`;
+      mb.isPositive = nqChg >= 0;
+      mb.sub = `현물 대비 ${idxSigned(diff, 2)}%p · ${diff > 0.1 ? '갭상승 출발 시사' : diff < -0.1 ? '갭하락 출발 시사' : '보합권 출발 예상'}`;
+      changed = true;
+    }
+  }
+  return changed;
+}
+
+async function syncMarketData() {
   try {
-    const res = await fetch('./data/market_data.json', { cache: 'no-store' });
+    const res = await fetch(`./data/market_data.json?t=${Date.now()}`, { cache: 'no-store' });
     if (!res.ok) return;
 
     const data = await res.json();
@@ -2223,6 +2352,14 @@ function pickChange(s) {
     const updatedTimeEl = document.getElementById('last-updated-time');
     if (updatedTimeEl && updatedTimeText) {
       updatedTimeEl.textContent = `최근 업데이트: ${updatedTimeText}`;
+    }
+
+    if (data && data.indices && typeof data.indices === 'object') {
+      try {
+        if (applyIndicesFromData(data.indices)) renderIndexFuturesAndMacro();
+      } catch (e) {
+        console.warn('지수 데이터 반영 실패', e);
+      }
     }
 
     if (!data || typeof data !== 'object' || !Array.isArray(data.stocks) || data.stocks.length === 0) {
@@ -2431,7 +2568,9 @@ const metaMap = {
   } catch (err) {
     console.warn('최신 JSON을 불러오지 못해 기존 화면을 유지합니다.', err);
   }
-})();
+}
+syncMarketData();
+setInterval(syncMarketData, 5 * 60 * 1000);
 </script>
   <script src="https://s3.tradingview.com/tv.js"></script>
 <script>

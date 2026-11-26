@@ -12,6 +12,10 @@ INDEX_TICKERS = {
     "nasdaq_spot": "^IXIC",
     "nasdaq_futures": "NQ=F",
     "qqq": "QQQ",
+    "ndx_spot": "^NDX",
+    "vix": "^VIX",
+    "us10y": "^TNX",
+    "usdkrw": "KRW=X",
 }
 
 STOCK_TICKERS = [
