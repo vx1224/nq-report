@@ -1,5 +1,5 @@
 {
-  "updated_at_utc": "2026-11-26 18:43:04 UTC",
+  "updated_at_utc": "2026-11-26 19:53:38 UTC",
   "session": "regular",
   "indices": {
     "sp500_spot": {
@@ -85,12 +85,12 @@
     "usdkrw": {
       "symbol": "KRW=X",
       "session": "regular",
-      "price": 1343.4,
-      "change_pct": 0.06,
-      "ma20": 1340.23,
+      "price": 1343.15,
+      "change_pct": 0.04,
+      "ma20": 1340.22,
       "ma60": 1344.37,
       "ma120": 1403.96,
-      "rsi14": 39.74
+      "rsi14": 39.5
     }
   },
   "stocks": [
