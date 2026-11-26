@@ -1,5 +1,5 @@
 {
-  "updated_at_utc": "2026-11-26 16:31:27 UTC",
+  "updated_at_utc": "2026-11-26 17:45:58 UTC",
   "session": "regular",
   "indices": {
     "sp500_spot": {
@@ -15,12 +15,12 @@
     "sp500_futures": {
       "symbol": "ES=F",
       "session": "regular",
-      "price": 7250.5,
-      "change_pct": 0.76,
-      "ma20": 7421.85,
-      "ma60": 7635.68,
-      "ma120": 7609.44,
-      "rsi14": 44.73
+      "price": 7236.25,
+      "change_pct": 0.56,
+      "ma20": 7421.14,
+      "ma60": 7635.44,
+      "ma120": 7609.32,
+      "rsi14": 44.18
     },
     "nasdaq_spot": {
       "symbol": "^IXIC",
@@ -35,12 +35,12 @@
     "nasdaq_futures": {
       "symbol": "NQ=F",
       "session": "regular",
-      "price": 26284.5,
-      "change_pct": 0.71,
-      "ma20": 27342.76,
-      "ma60": 29194.42,
-      "ma120": 29316.1,
-      "rsi14": 44.93
+      "price": 26238.5,
+      "change_pct": 0.53,
+      "ma20": 27340.46,
+      "ma60": 29193.65,
+      "ma120": 29315.71,
+      "rsi14": 44.6
     },
     "qqq": {
       "symbol": "QQQ",
@@ -65,12 +65,12 @@
     "vix": {
       "symbol": "^VIX",
       "session": "regular",
-      "price": 26.64,
-      "change_pct": -5.83,
-      "ma20": 23.59,
+      "price": 26.8,
+      "change_pct": -5.27,
+      "ma20": 23.6,
       "ma60": 18.76,
       "ma120": 17.68,
-      "rsi14": 51.21
+      "rsi14": 51.4
     },
     "us10y": {
       "symbol": "^TNX",
@@ -85,12 +85,12 @@
     "usdkrw": {
       "symbol": "KRW=X",
       "session": "regular",
-      "price": 1344.09,
-      "change_pct": 0.11,
-      "ma20": 1340.27,
-      "ma60": 1344.38,
+      "price": 1343.28,
+      "change_pct": 0.05,
+      "ma20": 1340.22,
+      "ma60": 1344.37,
       "ma120": 1403.96,
-      "rsi14": 40.4
+      "rsi14": 39.63
     }
   },
   "stocks": [
