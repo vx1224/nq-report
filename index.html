@@ -201,7 +201,7 @@
 
     <!-- 3. Section 2 & 3: 개별 종목 분석 (🔥 지금 핫한 주식 vs 🗂️ 테마별 대표 대기업) & AI 딥다이브 패널 -->
     <section class="grid grid-cols-1 xl:grid-cols-12 gap-6">
-  <div class="xl:col-span-7 bg-[#111827] border border-gray-800/90 rounded-2xl p-4 sm:p-6 shadow-xl space-y-5" id="deep-dive-panel">
+  <div class="xl:col-span-7 xl:self-start bg-[#111827] border border-gray-800/90 rounded-2xl p-4 sm:p-6 shadow-xl space-y-5" id="deep-dive-panel">
         <!-- JS로 선택된 종목 상세 렌더링 -->
       </div>
       <!-- 좌측/상단: 개별 종목 뷰 컨테이너 (7컬럼) -->
@@ -1322,7 +1322,8 @@ def analyze_market(tickers: str = "QQQ,NVDA,AVGO,AMD,TSM,MSFT,GOOGL,AMZN,META,AA
         renderHotStocksPager(0);
         return;
       }
-const HOT_PAGE_SIZE = 8;
+window.hotPageSize = window.hotPageSize || 8;
+const HOT_PAGE_SIZE = window.hotPageSize;
 window.hotCurrentPage = window.hotCurrentPage || 1;
 
 const totalHotPages = Math.max(1, Math.ceil(filtered.length / HOT_PAGE_SIZE));
@@ -1400,6 +1401,7 @@ const preTag = stock.isPremarket ? ' (PRE)' : '';
         .join('');
 
       renderHotStocksPager(totalHotPages);
+      scheduleHotPageFit();
     }
 
     // 핫 종목 표 하단 페이지 번호 (표를 그릴 때마다 다시 그려 현재 페이지를 강조)
@@ -1416,7 +1418,7 @@ const preTag = stock.isPremarket ? ' (PRE)' : '';
         hostTable.insertAdjacentElement('afterend', pagerEl);
       }
 
-      if (!(totalPages >= 1)) {
+      if (!(totalPages > 1)) {
         pagerEl.innerHTML = '';
         return;
       }
@@ -1439,6 +1441,55 @@ const preTag = stock.isPremarket ? ' (PRE)' : '';
       }
       pagerEl.innerHTML = buttonsHtml;
     }
+    // ------------------------------------------------------------
+    // 목록 카드(우측)가 딥다이브 패널(좌측) 높이만큼 채워지도록 한 페이지 행 수 자동 계산
+    // ------------------------------------------------------------
+    const HOT_PAGE_MIN = 5;
+    const HOT_PAGE_MAX = 20;
+
+    function computeHotPageSize() {
+      const current = window.hotPageSize || 8;
+      const panel = document.getElementById('deep-dive-panel');
+      const tbodyEl = document.getElementById('watchlist-tbody');
+      const hotView = document.getElementById('hot-stocks-view');
+      if (!panel || !tbodyEl || !hotView || hotView.offsetParent === null) return current;
+
+      // 좌우 2열 배치(xl) 아닐 때는 카드가 늘어나지 않으므로 넉넉히
+      if (!window.matchMedia || !window.matchMedia('(min-width: 1280px)').matches) return HOT_PAGE_MAX;
+
+      const rows = tbodyEl.querySelectorAll('tr');
+      if (rows.length === 0 || tbodyEl.querySelector('td[colspan]')) return current;
+      const header = hotView.parentElement && hotView.parentElement.firstElementChild;
+      const thead = hotView.querySelector('thead');
+      if (!header || !thead || panel.offsetHeight < 200) return current;
+
+      // 행 높이는 지금까지 본 가장 큰 평균값을 써서 값이 흔들리지 않게 함
+      window.hotRowH = Math.max(window.hotRowH || 0, tbodyEl.offsetHeight / rows.length);
+      if (!(window.hotRowH > 0)) return current;
+
+      const PAGER_H = 48;
+      const avail = panel.offsetHeight - header.offsetHeight - thead.offsetHeight - PAGER_H;
+      const n = Math.floor(avail / window.hotRowH);
+      return Math.max(HOT_PAGE_MIN, Math.min(HOT_PAGE_MAX, n));
+    }
+
+    function scheduleHotPageFit() {
+      if (window.__hotFitQueued) return;
+      window.__hotFitQueued = true;
+      const raf = window.requestAnimationFrame || ((fn) => setTimeout(fn, 16));
+      raf(() => {
+        window.__hotFitQueued = false;
+        const n = computeHotPageSize();
+        if (n && n !== window.hotPageSize) {
+          // 지금 보던 첫 종목이 있는 페이지로 이동
+          const firstIdx = ((window.hotCurrentPage || 1) - 1) * (window.hotPageSize || n);
+          window.hotPageSize = n;
+          window.hotCurrentPage = Math.floor(firstIdx / n) + 1;
+          renderHotStocksTable();
+        }
+      });
+    }
+
     function renderThemeLeadersView() {
       const container = document.getElementById('theme-leaders-view');
       const themeKeys =
@@ -2151,6 +2202,14 @@ document.getElementById('last-updated-time').textContent = `최근 업데이트:
       renderHorizonCards();
       renderActiveListView();
       renderDeepDivePanel();
+
+      // 딥다이브 패널 높이(종목 선택·데이터 갱신)나 창 크기가 바뀌면 한 페이지 행 수를 다시 맞춤
+      const ddPanel = document.getElementById('deep-dive-panel');
+      if (ddPanel && typeof ResizeObserver !== 'undefined') {
+        new ResizeObserver(() => scheduleHotPageFit()).observe(ddPanel);
+      }
+      window.addEventListener('resize', scheduleHotPageFit);
+      scheduleHotPageFit();
     });
   </script>
   <script>
