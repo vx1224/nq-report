@@ -214,7 +214,7 @@
                 <span>개별 종목 AI 분석 & 테마별 리더</span>
                 <span id="watchlist-count" class="text-xs font-mono px-2 py-0.5 rounded-full bg-gray-800 text-gray-300">16종목</span>
               </h2>
-              <p class="text-xs text-gray-400 mt-0.5">핫한 주도주 흐름과 5대 핵심 테마별 대표 대기업을 전환하며 비교할 수 있습니다.</p>
+              <p class="text-xs text-gray-400 mt-0.5">핫한 주도주 흐름과 11개 테마별 대표 대기업(시총 $50B 이상, 자동 점수 포함)을 전환하며 비교할 수 있습니다.</p>
             </div>
 
             <!-- 메인 뷰 모드 스위치 (지금 핫한 주식 vs 테마별 대표 대기업) -->
@@ -249,7 +249,7 @@
 
           <!-- 모드 2용 테마 필터 바 (초기 숨김) -->
           <div id="theme-filter-bar" class="hidden flex flex-wrap items-center gap-1.5 pt-1">
-            <button data-theme="ALL" onclick="selectThemeFilter('ALL')" class="theme-pill active px-2.5 py-1 rounded-lg text-xs font-semibold bg-cyan-600/25 text-cyan-300 border border-cyan-500/40 transition cursor-pointer">전체 테마 (5)</button>
+            <button data-theme="ALL" onclick="selectThemeFilter('ALL')" class="theme-pill active px-2.5 py-1 rounded-lg text-xs font-semibold bg-cyan-600/25 text-cyan-300 border border-cyan-500/40 transition cursor-pointer">전체 테마</button>
             <button data-theme="AI 반도체" onclick="selectThemeFilter('AI 반도체')" class="theme-pill px-2.5 py-1 rounded-lg text-xs font-medium bg-gray-900 text-gray-400 border border-gray-800 hover:text-white transition cursor-pointer">AI 반도체</button>
             <button data-theme="빅테크 클라우드" onclick="selectThemeFilter('빅테크 클라우드')" class="theme-pill px-2.5 py-1 rounded-lg text-xs font-medium bg-gray-900 text-gray-400 border border-gray-800 hover:text-white transition cursor-pointer">빅테크 클라우드</button>
             <button data-theme="온디바이스" onclick="selectThemeFilter('온디바이스')" class="theme-pill px-2.5 py-1 rounded-lg text-xs font-medium bg-gray-900 text-gray-400 border border-gray-800 hover:text-white transition cursor-pointer">온디바이스</button>
@@ -577,8 +577,53 @@ def analyze_market(tickers: str = "QQQ,NVDA,AVGO,AMD,TSM,MSFT,GOOGL,AMZN,META,AA
         momentum: '에이전트 AI 도입 가속 · 높은 탄력성',
         horizonSummary: '단기 고변동성 · 중·장기 고성장 확장',
         badgeColor: 'text-amber-400 bg-amber-500/10 border-amber-500/30'
+      },
+      '금융·핀테크': {
+        title: '6. 금융·결제 & 핀테크',
+        icon: '🏦',
+        momentum: '시총 상위 은행·보험·자산운용·결제 대형주',
+        horizonSummary: '이동평균·RSI 기반 자동 점수',
+        badgeColor: 'text-sky-400 bg-sky-500/10 border-sky-500/30'
+      },
+      '헬스케어·바이오': {
+        title: '7. 헬스케어 & 바이오',
+        icon: '💊',
+        momentum: '시총 상위 제약·바이오·의료기기·보험 대형주',
+        horizonSummary: '이동평균·RSI 기반 자동 점수',
+        badgeColor: 'text-rose-400 bg-rose-500/10 border-rose-500/30'
+      },
+      '소비·유통·미디어': {
+        title: '8. 소비·유통 & 미디어',
+        icon: '🛒',
+        momentum: '시총 상위 유통·식음료·여행·통신·미디어 대형주',
+        horizonSummary: '이동평균·RSI 기반 자동 점수',
+        badgeColor: 'text-violet-400 bg-violet-500/10 border-violet-500/30'
+      },
+      '에너지·소재': {
+        title: '9. 에너지·소재',
+        icon: '🛢️',
+        momentum: '시총 상위 석유·가스·파이프라인·광산·화학 대형주',
+        horizonSummary: '이동평균·RSI 기반 자동 점수',
+        badgeColor: 'text-orange-400 bg-orange-500/10 border-orange-500/30'
+      },
+      '산업재·방산·운송': {
+        title: '10. 산업재·방산·운송',
+        icon: '🏭',
+        momentum: '시총 상위 항공우주·방산·기계·철도·운송 대형주',
+        horizonSummary: '이동평균·RSI 기반 자동 점수',
+        badgeColor: 'text-slate-300 bg-slate-500/10 border-slate-500/30'
+      },
+      '리츠·유틸리티': {
+        title: '11. 리츠 & 유틸리티',
+        icon: '🏢',
+        momentum: '시총 상위 리츠·전력·가스·폐기물 유틸리티',
+        horizonSummary: '이동평균·RSI 기반 자동 점수',
+        badgeColor: 'text-teal-400 bg-teal-500/10 border-teal-500/30'
       }
     };
+
+    // 테마 보기에서 펼쳐 둔 테마 (나머지는 상위 일부만 표시)
+    const expandedThemes = new Set();
 
     let stocksData = [
       // 1) AI 반도체 & 하드웨어
@@ -1297,7 +1342,7 @@ def analyze_market(tickers: str = "QQQ,NVDA,AVGO,AMD,TSM,MSFT,GOOGL,AMZN,META,AA
     function renderHotStocksTable() {
       const tbody = document.getElementById('watchlist-tbody');
       // 핫한 종목 우선 정렬 후 등급 필터 적용
-      const sorted = [...stocksData].sort((a, b) => {
+      const sorted = stocksData.filter((s) => !s.auto).sort((a, b) => {
         if (a.isHot !== b.isHot) return a.isHot ? -1 : 1;
         return a.hotRank - b.hotRank;
       });
@@ -1490,6 +1535,21 @@ const preTag = stock.isPremarket ? ' (PRE)' : '';
       });
     }
 
+    // 직접 분석한 종목을 먼저, 그다음 자동 점수 종목을 시가총액 순으로
+    function sortThemeStocks(list) {
+      return [...list].sort((a, b) => {
+        if (Boolean(a.auto) !== Boolean(b.auto)) return a.auto ? 1 : -1;
+        if (a.auto && b.auto) return (b.marketCap || 0) - (a.marketCap || 0);
+        return 0;
+      });
+    }
+
+    function toggleThemeExpand(themeKey) {
+      if (expandedThemes.has(themeKey)) expandedThemes.delete(themeKey);
+      else expandedThemes.add(themeKey);
+      renderThemeLeadersView();
+    }
+
     function renderThemeLeadersView() {
       const container = document.getElementById('theme-leaders-view');
       const themeKeys =
@@ -1500,8 +1560,12 @@ const preTag = stock.isPremarket ? ' (PRE)' : '';
       container.innerHTML = themeKeys
         .map((themeKey) => {
           const metaInfo = themeCatalog[themeKey];
-          const themeStocks = stocksData.filter((s) => s.theme === themeKey);
-          totalVisibleCount += themeStocks.length;
+          const allThemeStocks = sortThemeStocks(stocksData.filter((s) => s.theme === themeKey));
+          const previewLimit = currentThemeFilter === 'ALL' ? 8 : 16;
+          const isExpanded = expandedThemes.has(themeKey);
+          const themeStocks = isExpanded ? allThemeStocks : allThemeStocks.slice(0, previewLimit);
+          const hiddenCount = allThemeStocks.length - themeStocks.length;
+          totalVisibleCount += allThemeStocks.length;
 
           return `
             <div class="bg-gray-900/65 border border-gray-800 rounded-2xl p-4 space-y-3">
@@ -1511,12 +1575,12 @@ const preTag = stock.isPremarket ? ' (PRE)' : '';
                   <div class="flex items-center gap-2">
                     <span class="text-base">${metaInfo.icon}</span>
                     <h3 class="text-sm sm:text-base font-bold text-white">${metaInfo.title}</h3>
-                    <span class="text-[11px] font-mono px-2 py-0.5 rounded-full bg-gray-800 text-gray-300">${themeStocks.length}대장주</span>
+                    <span class="text-[11px] font-mono px-2 py-0.5 rounded-full bg-gray-800 text-gray-300">${allThemeStocks.length}종목</span>
                   </div>
                   <p class="text-xs text-gray-400 mt-0.5">${metaInfo.momentum}</p>
                 </div>
                 <div class="flex items-center gap-2 self-start sm:self-center">
-                    <span class="text-[11px] font-semibold px-2.5 py-1 rounded-lg border ${metaInfo.BadgeColor}">
+                    <span class="text-[11px] font-semibold px-2.5 py-1 rounded-lg border ${metaInfo.badgeColor}">
                       ${metaInfo.horizonSummary}
                     </span>
                     <button type="button"
@@ -1554,6 +1618,11 @@ const preTag = stock.isPremarket ? ' (PRE)' : '';
                                   ? '<span class="text-[9px] px-1.5 py-0.2 rounded bg-rose-500/15 text-rose-300 border border-rose-500/30 font-bold">HOT</span>'
                                   : ''
                               }
+                              ${
+                                stock.auto
+                                  ? '<span title="이동평균·RSI·52주 위치로 계산한 자동 점수 종목" class="text-[9px] px-1.5 py-0.2 rounded bg-gray-800 text-gray-400 border border-gray-700 font-bold">AUTO</span>'
+                                  : ''
+                              }
                             </div>
                             <div class="text-xs text-gray-400 truncate max-w-[150px]">${stock.name}</div>
                           </div>
@@ -1585,6 +1654,11 @@ const preTag = stock.isPremarket ? ' (PRE)' : '';
                   })
                   .join('')}
               </div>
+              ${
+                allThemeStocks.length > previewLimit
+                  ? `<button type="button" onclick="toggleThemeExpand('${themeKey}')" class="w-full py-2 rounded-lg text-xs font-semibold bg-gray-800/70 text-gray-300 border border-gray-700 hover:bg-gray-700 cursor-pointer">${isExpanded ? '접기 ▲' : `${hiddenCount}종목 더 보기 ▼`}</button>`
+                  : ''
+              }
             </div>
           `;
         })
@@ -1596,7 +1670,7 @@ const CUSTOM_STOCKS_STORAGE_KEY = 'nq_custom_stocks_v1';
 
 function saveCustomStocks() {
   try {
-    localStorage.setItem(CUSTOM_STOCKS_STORAGE_KEY, JSON.stringify(stocksData));
+    localStorage.setItem(CUSTOM_STOCKS_STORAGE_KEY, JSON.stringify(stocksData.filter((s) => !s.auto)));
   } catch (e) {
     console.warn('로컬 저장 실패:', e);
   }
@@ -1617,6 +1691,12 @@ function saveCustomStocks() {
   }
 })();
 
+// 직접 분석 종목은 통째로, 자동 점수 종목은 테마 선택만 저장 (시세·점수는 매번 새로 계산)
+function persistStockTheme(stock) {
+  if (stock.auto) saveThemeOverride(stock.ticker, stock.theme);
+  else saveCustomStocks();
+}
+
 function addThemeLeader(themeKey) {
   const rawTicker = prompt(`[${themeKey}] 테마에 추가할 티커를 입력하세요 (예: AVGO):`);
   if (!rawTicker) return;
@@ -1625,7 +1705,7 @@ function addThemeLeader(themeKey) {
   const existing = stocksData.find((s) => s.ticker === ticker);
   if (existing) {
     existing.theme = themeKey;
-    saveCustomStocks();
+    persistStockTheme(existing);
     if (typeof renderHotStocksTable === 'function') renderHotStocksTable();
     renderThemeLeadersView();
     return;
@@ -1665,7 +1745,7 @@ function editStockTheme(ticker) {
   if (!nextTheme) return;
 
   target.theme = nextTheme.trim();
-  saveCustomStocks();
+  persistStockTheme(target);
   if (typeof renderHotStocksTable === 'function') renderHotStocksTable();
   renderThemeLeadersView();
 }
@@ -1830,15 +1910,15 @@ function editStockTheme(ticker) {
             <div class="space-y-1.5 mt-2">
               <div class="flex justify-between items-center">
                 <span class="text-gray-400">Forward PER</span>
-                <span class="font-mono font-bold text-gray-100">${stock.forwardPE}x</span>
+                <span class="font-mono font-bold text-gray-100">${stock.forwardPE != null && stock.forwardPE !== '-' ? stock.forwardPE + 'x' : '-'}</span>
               </div>
               <div class="flex justify-between items-center">
                 <span class="text-gray-400">매출 성장률(YoY)</span>
-                <span class="font-mono font-bold text-emerald-400">+${stock.revGrowth}%</span>
+                <span class="font-mono font-bold text-emerald-400">${stock.revGrowth != null && stock.revGrowth !== '-' ? '+' + stock.revGrowth + '%' : '-'}</span>
               </div>
               <div class="flex justify-between items-center">
                 <span class="text-gray-400">영업이익률(OPM)</span>
-                <span class="font-mono font-bold text-blue-400">${stock.opMargin}%</span>
+                <span class="font-mono font-bold text-blue-400">${stock.opMargin != null && stock.opMargin !== '-' ? stock.opMargin + '%' : '-'}</span>
               </div>
             </div>
           </div>
@@ -1865,7 +1945,9 @@ function editStockTheme(ticker) {
         <div class="space-y-2 text-xs">
           <div class="font-bold text-gray-200">최신 핵심 뉴스 & AI 감성 분류</div>
           <div class="space-y-1.5">
-            ${stock.news
+            ${(stock.news || []).length === 0
+              ? '<div class="p-2 rounded-lg bg-gray-900/50 border border-gray-800/60 text-gray-400">자동 점수 종목은 뉴스 분석이 포함되지 않습니다. 차트와 이동평균을 참고하세요.</div>'
+              : stock.news
               .map((item) => {
                 const tagClass =
                   item.sentiment === '긍정'
@@ -2003,6 +2085,22 @@ function editStockTheme(ticker) {
       renderThemeLeadersView();
     }
 
+    // 테마 필터 버튼과 종목 추가 선택창을 themeCatalog 에서 만든다 (테마를 늘려도 HTML 수정 불필요)
+    function buildThemeControls() {
+      const keys = Object.keys(themeCatalog);
+      const on = 'theme-pill active px-2.5 py-1 rounded-lg text-xs font-semibold bg-cyan-600/25 text-cyan-300 border border-cyan-500/40 transition cursor-pointer';
+      const off = 'theme-pill px-2.5 py-1 rounded-lg text-xs font-medium bg-gray-900 text-gray-400 border border-gray-800 hover:text-white transition cursor-pointer';
+      const bar = document.getElementById('theme-filter-bar');
+      if (bar) {
+        bar.innerHTML = [['ALL', `전체 테마 (${keys.length})`], ...keys.map((k) => [k, k])]
+          .map(([key, label]) => `<button data-theme="${key}" onclick="selectThemeFilter('${key}')" class="${key === currentThemeFilter ? on : off}">${label}</button>`)
+          .join('');
+      }
+      const select = document.getElementById('ticker-theme-select');
+      if (select) select.innerHTML = keys.map((k) => `<option value="${k}">${k}</option>`).join('');
+    }
+    buildThemeControls();
+
     function selectTicker(ticker) {
       selectedTicker = ticker;
       renderActiveListView();
@@ -2115,6 +2213,7 @@ function editStockTheme(ticker) {
 
       setTimeout(() => {
         stocksData = stocksData.map((s) => {
+          if (s.auto) return s; // 자동 점수 종목은 실데이터만 사용
           const deltaPct = Number(((Math.random() - 0.45) * 0.7).toFixed(2));
           const updatedPrice = Number((s.price * (1 + deltaPct / 100)).toFixed(2));
           const updatedChange = Number((s.changePct + deltaPct).toFixed(2));
@@ -2394,6 +2493,198 @@ function applyIndicesFromData(ind) {
   return changed;
 }
 
+// ==========================================
+// 시총 상위 종목(universe): 시세 + 기술적 지표 기반 자동 점수
+// data/universe.json(분류) + data/market_data.json 의 universe(시세)를 합친다
+// ==========================================
+const THEME_OVERRIDES_KEY = 'nq_theme_overrides_v1';
+const SECTOR_KO = {
+  Technology: '기술', Finance: '금융', 'Health Care': '헬스케어', 'Consumer Discretionary': '경기소비재',
+  'Consumer Staples': '필수소비재', Industrials: '산업재', Energy: '에너지', Utilities: '유틸리티',
+  'Real Estate': '부동산', 'Basic Materials': '소재', Telecommunications: '통신'
+};
+let universeMetaPromise = null;
+
+function loadThemeOverrides() {
+  try {
+    return JSON.parse(localStorage.getItem(THEME_OVERRIDES_KEY) || '{}') || {};
+  } catch (e) {
+    return {};
+  }
+}
+
+function saveThemeOverride(ticker, theme) {
+  try {
+    const all = loadThemeOverrides();
+    all[ticker] = theme;
+    localStorage.setItem(THEME_OVERRIDES_KEY, JSON.stringify(all));
+  } catch (e) {
+    console.warn('테마 저장 실패:', e);
+  }
+}
+
+function loadUniverseMeta() {
+  if (!universeMetaPromise) {
+    universeMetaPromise = fetch(`./data/universe.json?t=${Math.floor(Date.now() / 3600000)}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .catch(() => null)
+      .then((meta) => {
+        if (!meta) universeMetaPromise = null; // 실패하면 다음 동기화 때 다시 시도
+        return meta;
+      });
+  }
+  return universeMetaPromise;
+}
+
+function tvSymbolFor(ticker) {
+  const found = typeof stocksData !== 'undefined' && stocksData.find((x) => x.ticker === ticker);
+  return (found && found.tv) || ticker;
+}
+
+// 이동평균·RSI·52주 위치만으로 단기/중기/장기 점수를 계산 (실적·뉴스는 반영하지 않음)
+function autoScores(q) {
+  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+  const pos = (v) => (v != null && Number.isFinite(Number(v)) && Number(v) > 0 ? Number(v) : null);
+  const p = Number(q.p);
+  const ma20 = pos(q.ma20), ma60 = pos(q.ma60), ma120 = pos(q.ma120), hi = pos(q.hi), lo = pos(q.lo);
+  const rsi = q.rsi == null || !Number.isFinite(Number(q.rsi)) ? 50 : Number(q.rsi);
+  const chg = q.chg == null || !Number.isFinite(Number(q.chg)) ? 0 : Number(q.chg);
+
+  let short = 62;
+  if (ma20) {
+    short += p >= ma20 ? 8 : -8;
+    short += clamp((p / ma20 - 1) * 100, -6, 6);
+  }
+  if (rsi >= 75) short -= 6;
+  else if (rsi >= 65) short += 2;
+  else if (rsi >= 45) short += 7;
+  else if (rsi >= 32) short -= 2;
+  else short += 3; // 과매도 반등 여지
+  short += clamp(chg, -3, 3) * 1.2;
+
+  let mid = 62;
+  if (ma60) {
+    mid += p >= ma60 ? 10 : -10;
+    mid += clamp((p / ma60 - 1) * 100, -12, 12) * 0.5;
+  }
+  if (ma20 && ma60) mid += ma20 >= ma60 ? 6 : -6;
+
+  let long = 62;
+  if (ma120) {
+    long += p >= ma120 ? 10 : -10;
+    if (ma60) long += ma60 >= ma120 ? 6 : -6;
+  }
+  let range = null;
+  if (hi && lo && hi > lo) {
+    range = clamp((p - lo) / (hi - lo), 0, 1);
+    long += (range - 0.5) * 16;
+  }
+  return {
+    short: Math.round(clamp(short, 35, 95)),
+    mid: Math.round(clamp(mid, 35, 95)),
+    long: Math.round(clamp(long, 35, 95)),
+    range
+  };
+}
+
+function sectorLabel(m) {
+  const sec = SECTOR_KO[m.sec] || m.sec || '기타';
+  return m.ind ? `${sec} · ${m.ind}` : sec;
+}
+
+function buildAutoStock(m, q, theme) {
+  const sc = autoScores(q);
+  const p = Number(q.p);
+  const val = (v) => (v != null && Number(v) > 0 ? Number(v) : p);
+  const ma20 = val(q.ma20), ma60 = val(q.ma60), ma120 = val(q.ma120);
+  const rsi = q.rsi == null ? 50 : Number(q.rsi);
+  const chg = q.chg == null ? 0 : Number(q.chg);
+  const rsiLabel = rsi >= 70 ? '과매수 구간' : rsi <= 35 ? '과매도 구간' : '중립 구간';
+  const side = (a, b) => (a >= b ? '위' : '아래');
+  const dirShort = (v) => (v >= 80 ? '강세 (▲)' : v >= 68 ? '반등 우위 (↗)' : v >= 56 ? '보합 (→)' : '조정 (↘)');
+  const dirLong = (v) => (v >= 80 ? '강한 우상향 (▲▲)' : v >= 68 ? '우상향 (▲)' : v >= 56 ? '횡보 (→)' : '하락 압력 (▼)');
+  const rangeText = sc.range == null ? '52주 범위 정보 없음' : `52주 범위의 ${Math.round(sc.range * 100)}% 지점`;
+
+  return {
+    ticker: m.s,
+    name: m.n,
+    theme,
+    sector: sectorLabel(m),
+    auto: true,
+    ex: m.ex,
+    tv: `${{ nasdaq: 'NASDAQ', nyse: 'NYSE', amex: 'AMEX' }[m.ex] || 'NASDAQ'}:${m.s}`,
+    marketCap: m.mc,
+    isHot: false,
+    hotTag: '',
+    hotRank: 999,
+    price: p,
+    changePct: chg,
+    shortScore: sc.short,
+    midScore: sc.mid,
+    longScore: sc.long,
+    shortDir: dirShort(sc.short),
+    midDir: dirLong(sc.mid),
+    longDir: dirLong(sc.long),
+    ma20,
+    ma60,
+    ma120,
+    rsi,
+    forwardPE: null,
+    revGrowth: null,
+    opMargin: null,
+    oneLiner: '자동 점수 종목 · 이동평균·RSI·52주 위치만으로 계산한 기술적 판단이며 실적·뉴스 분석은 포함하지 않습니다.',
+    shortNote: `현재가는 20일선(${ma20.toFixed(2)}) ${side(p, ma20)}이고 RSI ${rsi.toFixed(1)}(${rsiLabel}), 오늘 등락 ${chg >= 0 ? '+' : ''}${chg.toFixed(2)}%입니다.`,
+    midNote: `현재가는 60일선(${ma60.toFixed(2)}) ${side(p, ma60)}이고, 20일선이 60일선 ${side(ma20, ma60)}에 있습니다.`,
+    longNote: `현재가는 120일선(${ma120.toFixed(2)}) ${side(p, ma120)}이고, ${rangeText}입니다.`,
+    news: []
+  };
+}
+
+// market_data.json 의 universe 를 stocksData 에 반영. 바뀐 종목 수를 돌려준다.
+async function applyUniverseFromData(uni, liveMap) {
+  if (!uni || typeof uni !== 'object') return 0;
+  const meta = await loadUniverseMeta();
+  if (!meta || !Array.isArray(meta.stocks)) return 0;
+
+  const overrides = loadThemeOverrides();
+  const index = new Map(stocksData.map((x) => [String(x.ticker || '').toUpperCase(), x]));
+  let changed = 0;
+
+  meta.stocks.forEach((m) => {
+    const q = uni[m.s];
+    if (!q || !(Number(q.p) > 0)) return;
+    const theme = overrides[m.s] || m.th;
+    const cur = index.get(m.s);
+
+    if (cur && !cur.auto) {
+      // 직접 분석한 종목: 점수·코멘트는 그대로 두고, 테마 목록에 없는 테마만 바로잡고 시세를 보충
+      if (!themeCatalog[cur.theme]) cur.theme = theme;
+      if (!cur.sector) cur.sector = sectorLabel(m);
+      cur.marketCap = m.mc;
+      if (!(liveMap && liveMap.has(m.s))) {
+        cur.price = Number(q.p);
+        cur.changePct = q.chg == null ? cur.changePct : Number(q.chg);
+        if (q.ma20 > 0) cur.ma20 = q.ma20;
+        if (q.ma60 > 0) cur.ma60 = q.ma60;
+        if (q.ma120 > 0) cur.ma120 = q.ma120;
+        if (q.rsi != null) cur.rsi = q.rsi;
+      }
+      changed += 1;
+      return;
+    }
+
+    const next = buildAutoStock(m, q, theme);
+    if (cur) {
+      Object.assign(cur, next);
+    } else {
+      stocksData.push(next);
+      index.set(m.s, next);
+    }
+    changed += 1;
+  });
+  return changed;
+}
+
 async function syncMarketData() {
   try {
     const res = await fetch(`./data/market_data.json?t=${Date.now()}`, { cache: 'no-store' });
@@ -2544,13 +2835,13 @@ function buildHorizonAnalysis(stock) {
         const sym = String(s.symbol || s.ticker || '').toUpperCase();
         if (!sym || existingTickers.has(sym)) return;
 const metaMap = {
-      SPCX: { name: 'SpaceX', theme: '우주·항공', oneLiner: '우주 발사체·위성 통신 모멘텀' },
+      SPCX: { name: 'SpaceX', theme: '산업재·방산·운송', oneLiner: '우주 발사체·위성 통신 모멘텀' },
       INTC: { name: 'Intel Corp.', theme: 'AI 반도체', oneLiner: '파운드리·PC CPU 턴어라운드 주시' },
-      ANT: { name: 'Ant Group', theme: '핀테크·AI', oneLiner: '디지털 결제·AI 서비스 확장 기대' },
-      ORCL: { name: 'Oracle Corp.', theme: '빅테크·클라우드', oneLiner: 'AI 데이터센터·클라우드 수주 확대' },
-      NFLX: { name: 'Netflix Inc.', theme: '미디어·스트리밍', oneLiner: '광고 요금제·구독 수익성 개선' },
-      MU: { name: 'Micron Technology', theme: '메모리 반도체', oneLiner: 'HBM·서버 D램 업황 수혜' },
-      BAC: { name: 'Bank of America', theme: '금융·거시', oneLiner: '금리 환경·대출 마진 및 자산건전성 주시' }
+      ANT: { name: 'Anthropic PBC', theme: '빅테크 클라우드', oneLiner: 'AI 모델·API 플랫폼 기업' },
+      ORCL: { name: 'Oracle Corp.', theme: '빅테크 클라우드', oneLiner: 'AI 데이터센터·클라우드 수주 확대' },
+      NFLX: { name: 'Netflix Inc.', theme: '소비·유통·미디어', oneLiner: '광고 요금제·구독 수익성 개선' },
+      MU: { name: 'Micron Technology', theme: 'AI 반도체', oneLiner: 'HBM·서버 D램 업황 수혜' },
+      BAC: { name: 'Bank of America', theme: '금융·핀테크', oneLiner: '금리 환경·대출 마진 및 자산건전성 주시' }
     };
     const fallbackMeta = metaMap[sym] || {};
         const priceVal = pickPrice(s);
@@ -2611,7 +2902,14 @@ const metaMap = {
       });
     }
 
-    // 3) 화면 다시 그리기
+    // 3) 시총 상위 종목(universe) 시세·자동 점수 반영
+    try {
+      updatedCount += await applyUniverseFromData(data.universe, stockMap);
+    } catch (e) {
+      console.warn('종목 universe 반영 실패', e);
+    }
+
+    // 4) 화면 다시 그리기
     if (updatedCount > 0) {
       if (typeof renderIndexFuturesAndMacro === 'function') renderIndexFuturesAndMacro();
       if (typeof renderHorizonCards === 'function') renderHorizonCards();
@@ -2645,7 +2943,7 @@ setInterval(syncMarketData, 5 * 60 * 1000);
     try {
       new TradingView.widget({
         autosize: true,
-        symbol: cleanTicker,
+        symbol: tvSymbolFor(cleanTicker),
         interval: 'D',
         timezone: 'Asia/Seoul',
         theme: 'dark',
