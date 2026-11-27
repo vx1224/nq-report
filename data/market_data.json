@@ -1,10 +1,10 @@
 {
-  "updated_at_utc": "2026-11-27 00:51:03 UTC",
-  "session": "afterhours",
+  "updated_at_utc": "2026-11-27 02:14:38 UTC",
+  "session": "closed",
   "indices": {
     "sp500_spot": {
       "symbol": "^GSPC",
-      "session": "afterhours",
+      "session": "closed",
       "price": 7182.78,
       "change_pct": -0.25,
       "ma20": 7423.12,
@@ -14,17 +14,17 @@
     },
     "sp500_futures": {
       "symbol": "ES=F",
-      "session": "afterhours",
-      "price": 7246.5,
-      "change_pct": 0.71,
-      "ma20": 7421.65,
-      "ma60": 7635.61,
-      "ma120": 7609.4,
-      "rsi14": 44.57
+      "session": "closed",
+      "price": 7277.25,
+      "change_pct": 1.13,
+      "ma20": 7423.19,
+      "ma60": 7636.13,
+      "ma120": 7609.66,
+      "rsi14": 45.74
     },
     "nasdaq_spot": {
       "symbol": "^IXIC",
-      "session": "afterhours",
+      "session": "closed",
       "price": 23585.8,
       "change_pct": -0.62,
       "ma20": 24712.52,
@@ -34,17 +34,17 @@
     },
     "nasdaq_futures": {
       "symbol": "NQ=F",
-      "session": "afterhours",
-      "price": 26275.25,
-      "change_pct": 0.67,
-      "ma20": 27342.3,
-      "ma60": 29194.27,
-      "ma120": 29316.02,
-      "rsi14": 44.86
+      "session": "closed",
+      "price": 26490.5,
+      "change_pct": 1.5,
+      "ma20": 27353.06,
+      "ma60": 29197.85,
+      "ma120": 29317.81,
+      "rsi14": 46.33
     },
     "qqq": {
       "symbol": "QQQ",
-      "session": "afterhours",
+      "session": "closed",
       "price": 633.93,
       "change_pct": -0.65,
       "ma20": 666.73,
@@ -54,7 +54,7 @@
     },
     "ndx_spot": {
       "symbol": "^NDX",
-      "session": "afterhours",
+      "session": "closed",
       "price": 26046.9,
       "change_pct": -0.64,
       "ma20": 27406.92,
@@ -64,7 +64,7 @@
     },
     "vix": {
       "symbol": "^VIX",
-      "session": "afterhours",
+      "session": "closed",
       "price": 26.8,
       "change_pct": -5.27,
       "ma20": 23.6,
@@ -74,7 +74,7 @@
     },
     "us10y": {
       "symbol": "^TNX",
-      "session": "afterhours",
+      "session": "closed",
       "price": 4.85,
       "change_pct": -1.1,
       "ma20": 4.97,
@@ -84,19 +84,19 @@
     },
     "usdkrw": {
       "symbol": "KRW=X",
-      "session": "afterhours",
-      "price": 1342.76,
-      "change_pct": -0.02,
-      "ma20": 1340.45,
-      "ma60": 1344.15,
-      "ma120": 1402.5,
-      "rsi14": 32.35
+      "session": "closed",
+      "price": 1341.45,
+      "change_pct": -0.11,
+      "ma20": 1340.38,
+      "ma60": 1344.13,
+      "ma120": 1402.49,
+      "rsi14": 31.62
     }
   },
   "stocks": [
     {
       "symbol": "NVDA",
-      "session": "afterhours",
+      "session": "closed",
       "price": 149.3,
       "change_pct": -3.91,
       "ma20": 172.48,
@@ -106,7 +106,7 @@
     },
     {
       "symbol": "MSFT",
-      "session": "afterhours",
+      "session": "closed",
       "price": 489.93,
       "change_pct": -1.25,
       "ma20": 516.38,
@@ -116,7 +116,7 @@
     },
     {
       "symbol": "AAPL",
-      "session": "afterhours",
+      "session": "closed",
       "price": 355.58,
       "change_pct": 0.43,
       "ma20": 348.54,
@@ -126,7 +126,7 @@
     },
     {
       "symbol": "AMZN",
-      "session": "afterhours",
+      "session": "closed",
       "price": 244.43,
       "change_pct": -3.12,
       "ma20": 257.19,
@@ -136,7 +136,7 @@
     },
     {
       "symbol": "META",
-      "session": "afterhours",
+      "session": "closed",
       "price": 609.89,
       "change_pct": 3.4,
       "ma20": 615.27,
@@ -146,7 +146,7 @@
     },
     {
       "symbol": "SPCX",
-      "session": "afterhours",
+      "session": "closed",
       "price": 127.44,
       "change_pct": 1.3,
       "ma20": 136.47,
@@ -156,7 +156,7 @@
     },
     {
       "symbol": "INTC",
-      "session": "afterhours",
+      "session": "closed",
       "price": 54.47,
       "change_pct": -0.6,
       "ma20": 59.36,
@@ -166,7 +166,7 @@
     },
     {
       "symbol": "ANT",
-      "session": "afterhours",
+      "session": "closed",
       "price": 82.79,
       "change_pct": 1.07,
       "ma20": null,
@@ -176,7 +176,7 @@
     },
     {
       "symbol": "ORCL",
-      "session": "afterhours",
+      "session": "closed",
       "price": 103.88,
       "change_pct": -5.13,
       "ma20": 118.8,
@@ -186,7 +186,7 @@
     },
     {
       "symbol": "GOOGL",
-      "session": "afterhours",
+      "session": "closed",
       "price": 273.1,
       "change_pct": -2.13,
       "ma20": 283.05,
@@ -196,7 +196,7 @@
     },
     {
       "symbol": "TSLA",
-      "session": "afterhours",
+      "session": "closed",
       "price": 380.14,
       "change_pct": -1.18,
       "ma20": 382.15,
@@ -206,7 +206,7 @@
     },
     {
       "symbol": "AVGO",
-      "session": "afterhours",
+      "session": "closed",
       "price": 300.86,
       "change_pct": -0.07,
       "ma20": 326.99,
@@ -216,7 +216,7 @@
     },
     {
       "symbol": "PLTR",
-      "session": "afterhours",
+      "session": "closed",
       "price": 163.59,
       "change_pct": 1.5,
       "ma20": 166.31,
@@ -226,7 +226,7 @@
     },
     {
       "symbol": "TSM",
-      "session": "afterhours",
+      "session": "closed",
       "price": 342.34,
       "change_pct": -1.96,
       "ma20": 379.5,
@@ -236,7 +236,7 @@
     },
     {
       "symbol": "GEV",
-      "session": "afterhours",
+      "session": "closed",
       "price": 715.0,
       "change_pct": -0.78,
       "ma20": 796.18,
@@ -246,7 +246,7 @@
     },
     {
       "symbol": "NFLX",
-      "session": "afterhours",
+      "session": "closed",
       "price": 59.41,
       "change_pct": 0.92,
       "ma20": 61.68,
@@ -256,7 +256,7 @@
     },
     {
       "symbol": "MU",
-      "session": "afterhours",
+      "session": "closed",
       "price": 601.25,
       "change_pct": -4.53,
       "ma20": 742.8,
@@ -266,7 +266,7 @@
     },
     {
       "symbol": "BAC",
-      "session": "afterhours",
+      "session": "closed",
       "price": 48.54,
       "change_pct": -0.04,
       "ma20": 49.69,
