@@ -1,5 +1,5 @@
 {
-  "updated_at_utc": "2026-11-27 10:45:03 UTC",
+  "updated_at_utc": "2026-11-27 11:45:43 UTC",
   "session": "premarket",
   "indices": {
     "sp500_spot": {
@@ -15,12 +15,12 @@
     "sp500_futures": {
       "symbol": "ES=F",
       "session": "premarket",
-      "price": 7332.0,
-      "change_pct": 1.89,
-      "ma20": 7425.93,
-      "ma60": 7637.04,
-      "ma120": 7610.11,
-      "rsi14": 47.7
+      "price": 7318.25,
+      "change_pct": 1.7,
+      "ma20": 7425.24,
+      "ma60": 7636.81,
+      "ma120": 7610.0,
+      "rsi14": 47.22
     },
     "nasdaq_spot": {
       "symbol": "^IXIC",
@@ -35,12 +35,12 @@
     "nasdaq_futures": {
       "symbol": "NQ=F",
       "session": "premarket",
-      "price": 26777.25,
-      "change_pct": 2.59,
-      "ma20": 27367.4,
-      "ma60": 29202.63,
-      "ma120": 29320.2,
-      "rsi14": 48.16
+      "price": 26702.0,
+      "change_pct": 2.31,
+      "ma20": 27363.64,
+      "ma60": 29201.38,
+      "ma120": 29319.58,
+      "rsi14": 47.69
     },
     "qqq": {
       "symbol": "QQQ",
@@ -65,12 +65,12 @@
     "vix": {
       "symbol": "^VIX",
       "session": "premarket",
-      "price": 24.69,
-      "change_pct": -7.87,
-      "ma20": 23.86,
+      "price": 24.98,
+      "change_pct": -6.79,
+      "ma20": 23.88,
       "ma60": 18.93,
-      "ma120": 17.7,
-      "rsi14": 56.33
+      "ma120": 17.71,
+      "rsi14": 56.76
     },
     "us10y": {
       "symbol": "^TNX",
@@ -85,230 +85,230 @@
     "usdkrw": {
       "symbol": "KRW=X",
       "session": "premarket",
-      "price": 1334.08,
-      "change_pct": -0.66,
-      "ma20": 1340.01,
+      "price": 1334.28,
+      "change_pct": -0.65,
+      "ma20": 1340.02,
       "ma60": 1344.01,
       "ma120": 1402.43,
-      "rsi14": 28.05
+      "rsi14": 28.13
     }
   },
   "stocks": [
     {
       "symbol": "NVDA",
       "session": "premarket",
-      "price": 155.5,
-      "change_pct": 4.15,
+      "price": 152.83,
+      "change_pct": 2.36,
       "ma20": 172.48,
       "ma60": 206.46,
       "ma120": 207.37,
       "rsi14": 37.68,
-      "premarket_price": 155.5,
-      "premarket_change_pct": 4.15
+      "premarket_price": 152.83,
+      "premarket_change_pct": 2.36
     },
     {
       "symbol": "MSFT",
       "session": "premarket",
-      "price": 501.54,
-      "change_pct": 2.37,
+      "price": 499.69,
+      "change_pct": 1.99,
       "ma20": 516.38,
       "ma60": 514.93,
       "ma120": 470.95,
       "rsi14": 28.96,
-      "premarket_price": 501.54,
-      "premarket_change_pct": 2.37
+      "premarket_price": 499.69,
+      "premarket_change_pct": 1.99
     },
     {
       "symbol": "AAPL",
       "session": "premarket",
-      "price": 358.96,
-      "change_pct": 0.95,
+      "price": 357.84,
+      "change_pct": 0.64,
       "ma20": 348.54,
       "ma60": 340.0,
       "ma120": 324.82,
       "rsi14": 61.89,
-      "premarket_price": 358.96,
-      "premarket_change_pct": 0.95
+      "premarket_price": 357.84,
+      "premarket_change_pct": 0.64
     },
     {
       "symbol": "AMZN",
       "session": "premarket",
-      "price": 251.5,
-      "change_pct": 2.89,
+      "price": 250.54,
+      "change_pct": 2.5,
       "ma20": 257.19,
       "ma60": 254.9,
       "ma120": 252.74,
       "rsi14": 39.96,
-      "premarket_price": 251.5,
-      "premarket_change_pct": 2.89
+      "premarket_price": 250.54,
+      "premarket_change_pct": 2.5
     },
     {
       "symbol": "META",
       "session": "premarket",
-      "price": 634.24,
-      "change_pct": 3.99,
+      "price": 629.31,
+      "change_pct": 3.18,
       "ma20": 615.27,
       "ma60": 666.73,
       "ma120": 628.07,
       "rsi14": 51.11,
-      "premarket_price": 634.24,
-      "premarket_change_pct": 3.99
+      "premarket_price": 629.31,
+      "premarket_change_pct": 3.18
     },
     {
       "symbol": "SPCX",
       "session": "premarket",
-      "price": 132.58,
-      "change_pct": 4.03,
+      "price": 131.22,
+      "change_pct": 2.97,
       "ma20": 136.47,
       "ma60": 146.85,
       "ma120": null,
       "rsi14": 53.07,
-      "premarket_price": 132.58,
-      "premarket_change_pct": 4.03
+      "premarket_price": 131.22,
+      "premarket_change_pct": 2.97
     },
     {
       "symbol": "INTC",
       "session": "premarket",
-      "price": 57.27,
-      "change_pct": 5.14,
+      "price": 56.63,
+      "change_pct": 3.97,
       "ma20": 59.36,
       "ma60": 89.53,
       "ma120": 97.74,
       "rsi14": 52.8,
-      "premarket_price": 57.27,
-      "premarket_change_pct": 5.14
+      "premarket_price": 56.63,
+      "premarket_change_pct": 3.97
     },
     {
       "symbol": "ANT",
       "session": "premarket",
-      "price": 86.41,
-      "change_pct": 4.37,
+      "price": 85.84,
+      "change_pct": 3.68,
       "ma20": null,
       "ma60": null,
       "ma120": null,
       "rsi14": null,
-      "premarket_price": 86.41,
-      "premarket_change_pct": 4.37
+      "premarket_price": 85.84,
+      "premarket_change_pct": 3.68
     },
     {
       "symbol": "ORCL",
       "session": "premarket",
-      "price": 109.16,
-      "change_pct": 5.08,
+      "price": 108.19,
+      "change_pct": 4.15,
       "ma20": 118.8,
       "ma60": 133.43,
       "ma120": 140.67,
       "rsi14": 41.5,
-      "premarket_price": 109.16,
-      "premarket_change_pct": 5.08
+      "premarket_price": 108.19,
+      "premarket_change_pct": 4.15
     },
     {
       "symbol": "GOOGL",
       "session": "premarket",
-      "price": 281.82,
-      "change_pct": 3.19,
+      "price": 279.89,
+      "change_pct": 2.49,
       "ma20": 283.05,
       "ma60": 321.78,
       "ma120": 336.37,
       "rsi14": 44.18,
-      "premarket_price": 281.82,
-      "premarket_change_pct": 3.19
+      "premarket_price": 279.89,
+      "premarket_change_pct": 2.49
     },
     {
       "symbol": "TSLA",
       "session": "premarket",
-      "price": 389.18,
-      "change_pct": 2.38,
+      "price": 386.01,
+      "change_pct": 1.54,
       "ma20": 382.15,
       "ma60": 374.74,
       "ma120": 370.31,
       "rsi14": 61.51,
-      "premarket_price": 389.18,
-      "premarket_change_pct": 2.38
+      "premarket_price": 386.01,
+      "premarket_change_pct": 1.54
     },
     {
       "symbol": "AVGO",
       "session": "premarket",
-      "price": 313.1,
-      "change_pct": 4.07,
+      "price": 310.69,
+      "change_pct": 3.27,
       "ma20": 326.99,
       "ma60": 343.02,
       "ma120": 363.93,
       "rsi14": 52.38,
-      "premarket_price": 313.1,
-      "premarket_change_pct": 4.07
+      "premarket_price": 310.69,
+      "premarket_change_pct": 3.27
     },
     {
       "symbol": "PLTR",
       "session": "premarket",
-      "price": 169.3,
-      "change_pct": 3.49,
+      "price": 168.4,
+      "change_pct": 2.94,
       "ma20": 166.31,
       "ma60": 180.77,
       "ma120": 162.14,
       "rsi14": 56.38,
-      "premarket_price": 169.3,
-      "premarket_change_pct": 3.49
+      "premarket_price": 168.4,
+      "premarket_change_pct": 2.94
     },
     {
       "symbol": "TSM",
       "session": "premarket",
-      "price": 353.89,
-      "change_pct": 3.37,
+      "price": 351.52,
+      "change_pct": 2.68,
       "ma20": 379.5,
       "ma60": 419.16,
       "ma120": 420.73,
       "rsi14": 47.63,
-      "premarket_price": 353.89,
-      "premarket_change_pct": 3.37
+      "premarket_price": 351.52,
+      "premarket_change_pct": 2.68
     },
     {
       "symbol": "GEV",
       "session": "premarket",
-      "price": 749.88,
-      "change_pct": 4.88,
+      "price": 749.6,
+      "change_pct": 4.84,
       "ma20": 796.18,
       "ma60": 891.09,
       "ma120": 953.21,
       "rsi14": 42.36,
-      "premarket_price": 749.88,
-      "premarket_change_pct": 4.88
+      "premarket_price": 749.6,
+      "premarket_change_pct": 4.84
     },
     {
       "symbol": "NFLX",
       "session": "premarket",
-      "price": 59.99,
-      "change_pct": 0.98,
+      "price": 60.0,
+      "change_pct": 0.99,
       "ma20": 61.68,
       "ma60": 68.27,
       "ma120": 71.96,
       "rsi14": 30.07,
-      "premarket_price": 59.99,
-      "premarket_change_pct": 0.98
+      "premarket_price": 60.0,
+      "premarket_change_pct": 0.99
     },
     {
       "symbol": "MU",
       "session": "premarket",
-      "price": 643.02,
-      "change_pct": 6.95,
+      "price": 635.07,
+      "change_pct": 5.62,
       "ma20": 742.8,
       "ma60": 907.65,
       "ma120": 933.3,
       "rsi14": 45.46,
-      "premarket_price": 643.02,
-      "premarket_change_pct": 6.95
+      "premarket_price": 635.07,
+      "premarket_change_pct": 5.62
     },
     {
       "symbol": "BAC",
       "session": "premarket",
-      "price": 49.29,
-      "change_pct": 1.55,
+      "price": 49.24,
+      "change_pct": 1.44,
       "ma20": 49.69,
       "ma60": 53.63,
       "ma120": 56.85,
       "rsi14": 42.18,
-      "premarket_price": 49.29,
-      "premarket_change_pct": 1.55
+      "premarket_price": 49.24,
+      "premarket_change_pct": 1.44
     }
   ],
   "universe": {
